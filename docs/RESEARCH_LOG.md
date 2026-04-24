@@ -177,6 +177,51 @@
 
 ---
 
+## 2026-04-24 — Stack pivot to Vite + first spin-up
+
+**Participants**: John, Cassie
+
+### Decision
+**Swapped companion-dapp from Next.js 15 to Vite 6 + React 18 + Tailwind 3.**
+
+### Reasoning
+- Penny's `monolith-docs/DEEP_DIVE_Vite_Assessment_2026-04-23.md` shows 4 of 9
+  DIDzMonolith frontends are already on Vite; standardizing on it is the
+  dominant-path move.
+- A MetaMask Snap companion dApp is 99% client-side by nature — `window.ethereum`
+  doesn't exist on a server, so Next.js SSR is actively a problem, not a feature.
+- HMR in Vite: ~50ms. Next.js: 500ms–2s. Matters a lot for UX-heavy M1–M3 work.
+- Vite 8 (Rolldown, Rust) benchmarks: Linear cut builds 46s → 6s. We'll adopt v8
+  when Penny's monolith-wide upgrade wave hits; sticking with stable v6 for now.
+- Solflare's Snap companion uses Vite + React. Solid precedent.
+
+### Concrete changes
+- Removed: `next`, `next.config.js`, `next-env.d.ts`, `src/app/` (layout + page)
+- Added: `vite`, `@vitejs/plugin-react`, `vite.config.ts`, `index.html`,
+  `src/main.tsx`, `src/App.tsx`, `src/index.css`
+- Kept: all `src/components/` unchanged (dropped one `'use client'` directive
+  from `chain-card.tsx`)
+- Workspace packages `@cmm/shared` and `@cmm/dapp-sdk` now point `main` at
+  `src/index.ts` directly (Vite's bundler resolves TS at dev-time, no pre-build
+  step needed to iterate on the dApp)
+- `tsconfig.json`: standard Vite React template — `jsx: "react-jsx"`,
+  `types: ["vite/client", "node"]`, no Next.js plugin
+
+### Spin-up verification (this session)
+- `pnpm install` — clean, 706 packages resolved, 6s
+- `pnpm -F @cmm/companion-dapp dev` — **Vite v6.4.2 ready in 183 ms**
+- Browser preview opened on http://localhost:3000 — mock Midnight + Cardano
+  balance cards rendering deterministic fixtures. Demoland is live.
+
+### Notes
+- pnpm 9.15.9 installed globally via nvm's npm (no sudo needed)
+- TypeScript toolchain warnings `Cannot find type 'node'/'vite/client'`
+  resolve once `pnpm install` runs; all green now
+- No regression risk — swap is additive (new files) and subtractive (Next.js
+  files that had no users yet)
+
+---
+
 ## Template for next entries
 
 ```

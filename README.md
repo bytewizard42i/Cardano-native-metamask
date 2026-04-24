@@ -124,7 +124,7 @@ mock adapter is our demo layer; no throwaway demo repo.
 packages/
 ├── snap/            @cmm/snap          — the MetaMask Snap (audited core)
 ├── dapp-sdk/        @cmm/dapp-sdk      — TypeScript SDK with mock + real adapters
-├── companion-dapp/  @cmm/companion-dapp — Next.js dApp (doubles as demoland)
+├── companion-dapp/  @cmm/companion-dapp — Vite + React dApp (doubles as demoland)
 └── shared/          @cmm/shared        — types, constants, chain metadata
 ```
 

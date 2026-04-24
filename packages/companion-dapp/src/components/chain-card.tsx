@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import type { Balance, ChainId } from '@cmm/shared';
 import { createSnapAdapter } from '@cmm/dapp-sdk';

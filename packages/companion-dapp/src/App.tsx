@@ -2,7 +2,7 @@ import { Hero } from '@/components/hero';
 import { ChainCard } from '@/components/chain-card';
 import { FooterNote } from '@/components/footer-note';
 
-export default function Home() {
+export function App() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
       <Hero />
