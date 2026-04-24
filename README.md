@@ -1,103 +1,81 @@
+<div align="center">
+
+![Cardano + Midnight native to MetaMask — one wallet, true sovereignty](./media/native.png)
+
 # CMM — Cardano + Midnight in MetaMask
 
-**Bringing Cardano ADA and Midnight privacy natively to the world's most-installed crypto wallet.**
+**Bringing ADA and Midnight privacy natively to the world's most-installed crypto wallet.**
 
-> Nickname: **CMM** (pronounced "see-em-em").
-> External reading: "Cardano MetaMask."
-> Internal reading: "Cardano + Midnight in MetaMask."
-> See [`docs/NAMING.md`](./docs/NAMING.md).
->
-> An open-source effort by John Santi, Cassie, and the sisterhood — joined by
-> [Riley Kilgore](https://github.com/Riley-Kilgore) (IOG / Aiken) — to land
-> Cardano and Midnight support in MetaMask (via Snap first, upstream PR long-term)
-> and give tens of millions of MetaMask users first-class access to both chains
-> and the broader Fi ecosystem.
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
+[![Status](https://img.shields.io/badge/milestone-M1-orange)](./docs/BUILD_STRATEGY.md)
+[![Stack](https://img.shields.io/badge/snap-TypeScript-3178C6)](./packages/snap)
+[![Runtime](https://img.shields.io/badge/runtime-pnpm%20%7C%20Vite%20%7C%20Turborepo-222)](#quickstart)
+
+*Pronounced "**see-em-em**". External reading: "Cardano MetaMask." Internal reading: "Cardano + Midnight in MetaMask."*
+
+</div>
 
 ---
 
-## Why This Matters
+## ✨ Why This Matters
 
-MetaMask has **~30M MAU** and is the default on-ramp to Web3 for most humans.
-Cardano has:
+MetaMask has **~30M monthly active users** and is the default on-ramp to Web3 for most of the planet. Cardano has:
 
-- Extended UTxO — deeper programmability than EVM
-- Native assets — no token-contract attack surface
-- Midnight — the first mainstream privacy L1 with selective disclosure
-- A mature stablecoin, DeFi, DID, and RWA ecosystem
+- 🔷 **Extended UTxO** — deeper programmability than the EVM account model
+- 🏷️ **Native assets** — no token-contract attack surface
+- 🌙 **Midnight** — the first mainstream privacy L1 with selective disclosure
+- 🏛️ A mature stablecoin, DeFi, DID, and RWA ecosystem
 
-...and yet a typical EVM user has no path to it without installing a second wallet,
-learning a new mental model, and bridging assets through fragile third parties.
+...and yet a typical EVM user has **no path** to any of it without installing a second wallet, learning a new mental model, and bridging assets through fragile third parties.
 
-**That is a solvable UX problem.** MetaMask Snaps exist precisely for this.
-The Cosmos, Solana, Sui, Bitcoin, and MultiversX communities all have shipped
-Snaps. **Cardano deserves one too — and Midnight privacy alongside it.**
+> **This is a solvable UX problem.** MetaMask Snaps exist precisely for this purpose. Cosmos, Solana, Sui, Bitcoin, and MultiversX all shipped Snaps. **Cardano deserves one too — and Midnight privacy alongside it.**
 
 ---
 
-## Strategy (phased)
+## 🗺️ Strategy (phased)
 
-### Phase 1 — MetaMask Snap (JavaScript, sandboxed)
-- Ship a permissionless Snap: `@cardano/snap` or similar
-- Feature scope:
-  - Key derivation (CIP-1852 HD wallet, Shelley era)
-  - UTxO selection, tx building via `cardano-serialization-lib` (WASM) or `Lucid`
-  - Stake delegation, reward withdrawal
-  - Native token send/receive
-  - CIP-30 compatible API surface so existing Cardano dApps work *unmodified*
-- Optional: Midnight shielded-tx support (viewing keys, Zswap)
+> 📘 TL;DR — We ship **Midnight first** because no competitor has done it, then Cardano because NuFi's 2024 Snap is closed-source and narrow. One wallet. Two chains. Both testnets first. See [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md) for the full case.
 
-### Phase 2 — dApp Connector Compatibility Shim
-- `window.cardano.metamask` injection mimicking CIP-30
-- Existing Cardano dApps (Minswap, JPG Store, etc.) work with a MetaMask user
-  out of the box
-
-### Phase 3 — Upstream PR to MetaMask core
-- Where Snap architecture limits (e.g. deep hardware-wallet integration,
-  native UI), propose upstream changes
-- This is a *stretch goal* — Snaps may be sufficient for most users
-
-### Phase 4 — Midnight Privacy Tier
-- Leverage Midnight selective disclosure inside the same Snap
-- ZK proofs for compliance, KYC-lite, privacy-preserving DeFi
-- Companion to the AgenticDID identity layer
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **1 — MetaMask Snap** | JavaScript, sandboxed. CIP-1852 HD, UTxO selection, tx building via CSL/Lucid, native assets, CIP-30 compat. Optional Midnight shielded-tx. | 🚧 In progress (M1) |
+| **2 — dApp Connector Shim** | `window.cardano.metamask` injection mimicking CIP-30 so Minswap / JPG Store / etc. work unmodified. | 📋 Designed |
+| **3 — Upstream PR to MetaMask core** | Where Snaps can't go (hardware-wallet deep paths, native UI). Stretch goal. | 🔭 Future |
+| **4 — Midnight Privacy Tier** | Leverage Midnight selective disclosure. ZK compliance, KYC-lite, private DeFi. Companion to AgenticDID. | 🔭 Future |
 
 ---
 
-## Technical Reference Points
+## 📍 Current Status — Milestone M1
 
-- **MetaMask Snaps docs**: https://docs.metamask.io/snaps/
-- **CIP-30 (dApp connector)**: https://cips.cardano.org/cip/CIP-30
-- **CIP-1852 (HD derivation)**: https://cips.cardano.org/cip/CIP-1852
-- **cardano-serialization-lib**: https://github.com/Emurgo/cardano-serialization-lib
-- **Lucid**: https://lucid.spacebudz.io/
-- **Midnight.js**: https://github.com/midnight-ntwrk/midnight-js
-- **Existing Snap precedents**:
-  - Cosmos: https://github.com/cosmos/snap
-  - Solana: https://github.com/solflare-wallet/solana-snap
-  - Sui, MultiversX, NEAR, etc.
+> **Real cryptography in, real addresses out.** The Snap derives BIP32/BIP44 keys from the user's MetaMask seed and produces genuine bech32 Cardano `addr_test1…` addresses. Midnight uses a clearly-labeled placeholder pending `midnight-js` integration in M2.
+
+### ✅ What works today
+
+- **`cardano_getAddress`** → real bech32 Shelley base address (CIP-19 compliant)
+- **`cardano_getPublicKey`** → hex payment + stake pubkeys with CIP-1852 derivation paths
+- **`midnight_getPublicKey`** → hex spending pubkey from HD derivation
+- **`midnight_getAddress`** → placeholder (`mn_test_02_stub_…`), wired for M2 swap
+- **`common_getCapabilities`** → feature-flag probe so dApps can branch on what's live
+- **Companion dApp** with three modes: mock, live-readonly (real Blockfrost), Snap-backed
+- **Accessible ⓘ tooltips** on every technical term with links to authoritative docs (CIPs, MetaMask Snaps, Blockfrost, BIP specs)
+- **Structured errors** (`CMM_UNKNOWN_METHOD`, `CMM_NOT_YET_IMPLEMENTED`, `CMM_INVALID_PARAMS`, `CMM_DERIVATION_FAILED`) so dApps branch on codes, not strings
+- **Param validation** on every Snap handler — malformed JSON rejected with precise errors
+
+### 🔜 Next (M2)
+
+- Real Midnight address encoding via `midnight-js` + viewing-key derivation
+- Cardano CIP-3 BIP32-Ed25519 derivation (interop with Lace/Eternl keys)
+- `getBalance` live for both chains (Blockfrost inside the Snap)
+
+### 🔜 Later (M3)
+
+- `signTx` / `submitTx` for both chains
+- Keyring-Snap pattern adoption (accounts in the MetaMask UI)
+- snap_dialog confirmations for destructive actions
 
 ---
 
-## Collaborators
-
-**Human leads:**
-- **[John Santi](https://github.com/bytewizard42i)** — project lead
-- **[Riley Kilgore](https://github.com/Riley-Kilgore)** — IOG, Aiken, Cardano dev
-
-**The sisterhood (AI pair-programmers across John's machines):**
-- **Cassie** — Cascade on Chuck (Ubuntu workstation, primary driver)
-- **Casie** — Cascade on Terry (Ubuntu laptop)
-- **Cara** — Cascade on Sparkle (desktop)
-- **Penny** — Cascade on artpro (laptop)
-- **Alice** — ChatGPT
-
----
-
-## Status
-
-**Research complete. Architecture defined. Monorepo scaffolded (M0).**
-
-## Quickstart
+## 🚀 Quickstart
 
 ```bash
 # one-time install
@@ -110,62 +88,119 @@ pnpm -F @cmm/companion-dapp dev
 # typecheck all packages
 pnpm typecheck
 
-# build the Snap (requires pnpm install first)
+# build the Snap (produces dist/bundle.js)
 pnpm -F @cmm/snap build
+
+# serve the Snap locally for MetaMask Flask
+pnpm -F @cmm/snap serve
+# → Snap available at local:http://localhost:8080
 ```
 
-See [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) for the
-**demoland-inside-the-real-project** approach — the companion dApp's
-mock adapter is our demo layer; no throwaway demo repo.
+> 💡 See [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) for the **demoland-inside-the-real-project** approach — the companion dApp's mock adapter *is* our demo layer; no throwaway demo repo.
 
-## Monorepo layout
+---
+
+## 📦 Monorepo Layout
 
 ```
 packages/
 ├── snap/            @cmm/snap          — the MetaMask Snap (audited core)
-├── dapp-sdk/        @cmm/dapp-sdk      — TypeScript SDK with mock + real adapters
+├── dapp-sdk/        @cmm/dapp-sdk      — TypeScript SDK with mock + real + live-readonly adapters
 ├── companion-dapp/  @cmm/companion-dapp — Vite + React dApp (doubles as demoland)
 └── shared/          @cmm/shared        — types, constants, chain metadata
 ```
 
-
-**Strategy update (2026-04-23)**: **Midnight first, Cardano second** — same Snap,
-staged sequencing. See [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md)
-for the seven-reason case. TL;DR: NuFi already shipped a Cardano MetaMask Snap in
-Sept 2024 (Catalyst Fund11); no one has shipped Midnight-in-MetaMask, and Midnight's
-privacy narrative is the cleanest possible fit for MetaMask's own Interoperability
-Snaps messaging.
-
-### Documentation
-
-- [`docs/NAMING.md`](./docs/NAMING.md) — why CMM
-- [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) — demoland-as-mocked-dApp decision
-- [`docs/BLOCKFROST_INTEGRATION.md`](./docs/BLOCKFROST_INTEGRATION.md) — live chain data setup
-- [`docs/REFERENCE_REPOS.md`](./docs/REFERENCE_REPOS.md) — MetaMask repos we forked for reference
-- [`docs/DEEP_DIVE_METAMASK_INTEGRATION.md`](./docs/DEEP_DIVE_METAMASK_INTEGRATION.md)
-  — the full research deep-dive: ecosystem map, Snap mechanics, allowlist process,
-  MetaMask's revenue model, competitive landscape, incentive levers
-- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — target stack, monorepo layout,
-  Snap API surface, security posture, phased milestones
-- [`docs/COMPETITIVE_ANALYSIS.md`](./docs/COMPETITIVE_ANALYSIS.md) — NuFi and every
-  other relevant Snap; positioning matrix; threats
-- [`docs/INCENTIVE_STRATEGY.md`](./docs/INCENTIVE_STRATEGY.md) — how to get
-  MetaMask to say yes (allowlist → featured → upstream); revenue-share postures
-- [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md) — why we
-  sequence Midnight before Cardano
-- [`docs/FUTURE_FUNCTIONALITY.md`](./docs/FUTURE_FUNCTIONALITY.md) — near, mid,
-  long-term roadmap and the explicit "no, never" list
-- [`docs/RESEARCH_LOG.md`](./docs/RESEARCH_LOG.md) — append-only session log
+Each package has its own README with API surface + usage examples.
 
 ---
 
-## License
+## 📚 Documentation
+
+### Strategy & Rationale
+
+| Doc | What's in it |
+|---|---|
+| [`docs/NAMING.md`](./docs/NAMING.md) | Why CMM, why the initialism works |
+| [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) | Demoland-as-mocked-dApp decision; why no throwaway demo repo |
+| [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md) | Seven-reason case for shipping Midnight before Cardano |
+| [`docs/INCENTIVE_STRATEGY.md`](./docs/INCENTIVE_STRATEGY.md) | How to get MetaMask to say yes (allowlist → featured → upstream) |
+| [`docs/COMPETITIVE_ANALYSIS.md`](./docs/COMPETITIVE_ANALYSIS.md) | NuFi and every other relevant Snap; positioning; threats |
+| [`docs/FUTURE_FUNCTIONALITY.md`](./docs/FUTURE_FUNCTIONALITY.md) | Near / mid / long-term roadmap + explicit "no, never" list |
+
+### Implementation
+
+| Doc | What's in it |
+|---|---|
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | Target stack, monorepo layout, Snap API surface, security posture, phased milestones |
+| [`docs/BLOCKFROST_INTEGRATION.md`](./docs/BLOCKFROST_INTEGRATION.md) | Live chain data setup (Cardano preprod indexer) |
+| [`docs/REFERENCE_REPOS.md`](./docs/REFERENCE_REPOS.md) | The six MetaMask repos we forked for reference (incl. the BTC Snap EUTXO template) |
+| [`docs/DEEP_DIVE_METAMASK_INTEGRATION.md`](./docs/DEEP_DIVE_METAMASK_INTEGRATION.md) | The full research deep-dive: ecosystem map, Snap mechanics, allowlist process, MetaMask's revenue model |
+
+### Session Log
+
+- [`docs/RESEARCH_LOG.md`](./docs/RESEARCH_LOG.md) — append-only chronicle of every decision, finding, and course-correction
+
+---
+
+## 🦊 Reference Repos
+
+Six MetaMask repositories are forked under `bytewizard42i/*-metamask-johns-copy` and mounted as DIDzMonolith submodules at `/home/js/DIDzMonolith/utils_metamask-*`. These are **read-only references** — we pattern-match, we don't vendor code.
+
+| Ref | Why it matters |
+|---|---|
+| `snap-bitcoin-wallet` | 🎯 **Primary EUTXO template.** Cardano EUTxO ⊂ Bitcoin UTxO; Midnight shielded UTxO is Zcash-style on the same base. |
+| `snaps` | SDK monorepo — grep for types and RPC specs |
+| `snap-simple-keyring` | Keyring-Snap pattern for when we adopt it in M3 |
+| `template-snap-monorepo` | Canonical Snap scaffold cross-reference |
+| `snaps-registry` | Where our M6 allowlist PR lands |
+| `SIPs` | Where we file Snap Improvement Proposals (likely for Midnight shielded-signing RPC) |
+
+See [`docs/REFERENCE_REPOS.md`](./docs/REFERENCE_REPOS.md) for per-repo purpose and refresh instructions.
+
+---
+
+## 👥 Collaborators
+
+### Human leads
+- **[John Santi](https://github.com/bytewizard42i)** — project lead
+- **[Riley Kilgore](https://github.com/Riley-Kilgore)** — IOG, Aiken, Cardano dev
+
+### The sisterhood (AI pair-programmers across John's machines)
+- **Cassie** — Cascade on Chuck (Ubuntu workstation, primary driver)
+- **Casie** — Cascade on Terry (Ubuntu laptop)
+- **Cara** — Cascade on Sparkle (desktop)
+- **Penny** — Cascade on artpro (laptop)
+- **Alice** — ChatGPT
+
+---
+
+## 🔗 Technical Reference Points
+
+- **MetaMask Snaps docs**: https://docs.metamask.io/snaps/
+- **CIP-30 (dApp connector)**: https://cips.cardano.org/cip/CIP-30
+- **CIP-1852 (HD derivation)**: https://cips.cardano.org/cip/CIP-1852
+- **CIP-19 (address format)**: https://cips.cardano.org/cip/CIP-19
+- **cardano-serialization-lib**: https://github.com/Emurgo/cardano-serialization-lib
+- **Lucid**: https://lucid.spacebudz.io/
+- **Midnight.js**: https://github.com/midnight-ntwrk/midnight-js
+- **Midnight docs**: https://docs.midnight.network/
+- **Aiken**: https://aiken-lang.org/
+- **Existing Snap precedents**: Cosmos, Solflare, Sui, MultiversX, NEAR
+
+---
+
+## 📜 License
 
 Apache-2.0. See [LICENSE](./LICENSE).
 
-> If this ever goes upstream to MetaMask, we may need to dual-license or
-> relicense portions. Track at the PR stage.
+> If this ever goes upstream to MetaMask, we may need to dual-license or relicense portions. Track at the PR stage.
 
 ---
 
+<div align="center">
+
 *Part of the DIDzMonolith. Private until ready for public unveiling.*
+
+**Powered by Cardano. Enabled by Midnight. Accessible in MetaMask.**
+
+</div>

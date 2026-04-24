@@ -317,6 +317,100 @@ at 16MB). Acceptable.
 
 ---
 
+## 2026-04-24 — M1 Snap guts + UX layer + repo polish
+
+**Participants**: John, Cassie
+
+**Milestone crossed**: **M0 → M1**. The Snap now produces real cryptographic output from HD entropy; the companion dApp now has an accessible tooltip layer citing authoritative docs.
+
+### Decisions
+
+**Fork-or-clone the MetaMask reference repos?** Forked 6, dropped 1.
+- Forked (under `bytewizard42i/*-metamask-johns-copy`): `snaps`, `snap-bitcoin-wallet`, `snap-simple-keyring`, `template-snap-monorepo`, `snaps-registry`, `SIPs`.
+- Dropped `snap-solana-wallet` — account model, wrong lineage for us. Cardano EUTxO and Midnight shielded UTxO both descend from Bitcoin UTxO, so the Bitcoin Snap is our strongest architectural cousin.
+- Mounted all 6 as DIDzMonolith submodules at `/home/js/DIDzMonolith/utils_metamask-*`. ~83MB total disk.
+
+**Adopt the keyring-Snap pattern now?** Deferred to M3.
+- BTC Snap uses `endowment:keyring` + `snap_manageAccounts` — accounts appear directly in MetaMask's account list UI. Powerful but significantly larger audit surface.
+- For M1 we stayed with the simpler `endowment:rpc` pattern (dApp calls `wallet_invokeSnap`). Revisit when we have signing + account management to justify the complexity.
+
+**Upgrade the Snap SDK?** Yes — major leap.
+- `@metamask/snaps-sdk` 6.12 → 10.3 (4 major versions)
+- `@metamask/snaps-cli` 6.5 → 8.3
+- Added `@metamask/key-tree` ^10.1, `@metamask/utils` ^11.9, `@noble/hashes` ^1.5, `bech32` ^2.0
+- `snap.config.ts` format changed in 8.x — removed invalid `bundler: 'webpack'` key.
+- Manifest now requires `platformVersion: '10.3.0'`.
+- Stripped `.js` import extensions from all TS source (webpack in SES can't resolve them).
+
+**Cardano derivation — CIP-3 or plain Ed25519 for M1?** Plain Ed25519 via key-tree with documented caveat.
+- `@metamask/key-tree`'s `ed25519` curve is RFC-8032, not Cardano's BIP32-Ed25519 (CIP-3). Addresses we generate are **shape-correct bech32** (`addr_test1...`) but **not interoperable** with Lace/Eternl keys.
+- Good enough for M1 demo. M2 wires CIP-3 derivation for interop.
+- Caveat documented in-code at `packages/snap/src/chains/cardano/derive.ts:19`.
+
+**Midnight address encoding for M1?** Clearly-labeled placeholder.
+- Real Midnight address format requires `midnight-js` viewing-key derivation (M2 scope).
+- Rather than ship wrong-looking-but-plausible addresses, we emit `mn_test_02_stub_<fingerprint>` so the UI can detect and warn.
+- `isMidnightPlaceholder(addr)` helper lets the dApp flag it.
+
+**Input validation — superstruct or hand-rolled?** Hand-rolled for M1.
+- BTC Snap uses `superstruct`. For our current param surface (2 optional fields across 6 methods) a 40-line hand validator (`packages/snap/src/common/validate.ts`) is clearer and keeps the Snap bundle small.
+- Swap to superstruct when param surface grows past ~5 methods.
+
+**Error-surface shape?** Structured `data.code` on every error.
+- New `CmmSnapError` hierarchy: `UnknownMethodError`, `NotYetImplementedError`, `InvalidParamsError`, `DerivationError`.
+- Dispatcher catches these and emits JSON-RPC errors with `data: { code, chain }` so dApps branch on stable codes, not parsed strings.
+
+### What shipped today
+
+**Snap (`packages/snap/`):**
+- Modern SDK versions + `snap.manifest.json` with `platformVersion` and CIP-1852 Cardano paths.
+- `src/common/errors.ts` — error hierarchy.
+- `src/common/validate.ts` — param validators (security boundary).
+- `src/common/handler.ts` — added `common_getCapabilities` (dApp feature probe).
+- `src/chains/cardano/derive.ts` — CIP-1852 derivation via key-tree.
+- `src/chains/cardano/address.ts` — blake2b-224 + bech32 per CIP-19.
+- `src/chains/cardano/handler.ts` — `cardano_getPublicKey` + `cardano_getAddress` live.
+- `src/chains/midnight/derive.ts` — `m/44'/1296'` derivation.
+- `src/chains/midnight/address.ts` — placeholder encoding.
+- `src/chains/midnight/handler.ts` — `midnight_getPublicKey` + `midnight_getAddress` live.
+- `src/index.ts` — dispatcher + error unwrapping.
+
+**dApp SDK (`packages/dapp-sdk/`):**
+- `adapters/real.ts` — unwraps new M1 Snap response shapes.
+- New exports: `invokeCardanoGetAddress`, `invokeMidnightGetAddress`, `invokeGetCapabilities`, `CmmSnapErrorShape`.
+
+**Companion dApp (`packages/companion-dapp/`):**
+- `src/lib/docs-links.ts` — single-source registry of 21 authoritative external URLs.
+- `src/components/info-hint.tsx` — accessible ⓘ popover (hover peek, click pin, Escape close, aria-described, focusable).
+- `ModeSwitcher` and `ChainCard` now carry InfoHint tooltips on every technical term.
+- Snap mode is no longer disabled — enabled at M1.
+
+**Docs:**
+- Main `README.md` — hero image, badges, visual sections, M1 status panel, docs grouped by purpose, reference-repo table.
+- `packages/snap/README.md` — full RPC method reference, error-code table, security boundary doc, Flask testing guide.
+- `packages/dapp-sdk/README.md` — advanced exports, error handling pattern, all four modes.
+- `packages/companion-dapp/README.md` — updated for M1 state + tooltip layer.
+
+### Verification
+
+- `pnpm typecheck` — 6/6 tasks green
+- `pnpm -F @cmm/snap build` — 165 files, clean SES-compatible bundle, dist/bundle.js produced
+- All commits pushed to `origin/main`; WIP safety branch `wip/m1-snap-guts-partial` preserved on origin for archive
+
+### Open Questions
+
+- **CIP-3 derivation in-Snap**: which library? Options: port aicone's `cardano-hd` subset, vendor a tiny CIP-3 helper, or wait for `@metamask/key-tree` to add CIP-3 support upstream (unlikely). M2 decision.
+- **Midnight viewing-key derivation**: confirm with Midnight Foundation that our `m/44'/1296'` placeholder matches whatever they settle on for SLIP-44. Ask in Discord when we have a first-draft M2 PR.
+- **Keyring Snap pattern adoption**: M3 or defer further? Need to weigh audit-surface cost vs. "accounts in MM UI" UX win. Revisit when we have signing prototype.
+- **CIP-30 compatibility shim**: decide whether `window.cardano.metamask` gets injected by the Snap or by a separate npm package dApps install themselves. BTC Snap doesn't do this; they rely on `wallet_invokeSnap` directly. Cardano ecosystem may expect CIP-30 though. M4 decision.
+
+### Next
+
+- M1 wrap-up: test end-to-end in MetaMask Flask (John installs Flask, Cassie runs `pnpm -F @cmm/snap serve`, we verify real `addr_test1...` round-trip from dApp → MetaMask dialog → back).
+- M2 kickoff: pick CIP-3 derivation approach, start on Midnight viewing-key integration.
+
+---
+
 ## Template for next entries
 
 ```
