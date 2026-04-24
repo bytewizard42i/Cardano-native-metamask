@@ -272,6 +272,51 @@ Snap. See `docs/BLOCKFROST_INTEGRATION.md` for the full rationale.
 
 ---
 
+## 2026-04-24 — MetaMask reference repos forked + wired into monolith
+
+**Participants**: John, Cassie
+
+### Decision
+Added **6 MetaMask repos** as forks (`bytewizard42i/*-metamask-johns-copy`)
+mounted as submodules into DIDzMonolith at `utils_metamask-*`. Documented
+in `docs/REFERENCE_REPOS.md`.
+
+### What's in, what's out
+**In** (6):
+- `utils_metamask-snaps` — SDK monorepo
+- `utils_metamask-snap-bitcoin-wallet` — **primary EUTXO template**
+- `utils_metamask-snap-simple-keyring` — keyring pattern
+- `utils_metamask-template-snap-monorepo` — scaffold reference
+- `utils_metamask-snaps-registry` — allowlist (we'll PR at M6)
+- `utils_metamask-SIPs` — improvement proposals (potential future SIPs)
+
+**Out** (2, intentionally):
+- `snap-solana-wallet` — account model, structurally far from UTXO chains
+- `metamask-extension` / `metamask-mobile` — too large, only relevant at
+  M8+ upstream-PR time; browse on GitHub if needed
+
+### Key insight (John's call-out)
+The Bitcoin Snap is our strongest architectural reference: Cardano EUTXO is
+a direct extension of Bitcoin UTXO; Midnight's shielded UTXO is Zcash-style
+on the same base. When we begin the Cardano handler in M2, read
+`utils_metamask-snap-bitcoin-wallet` first — UTXO selection, BIP32
+derivation, tx building, and dialog UX all transfer.
+
+### Mobile note
+MetaMask Snaps do NOT run on mobile as of this cutoff. Mobile Snap support
+is on the roadmap but unshipped. Revisit quarterly. No repo cloned for this.
+
+### Disk footprint
+~83MB across all 6 submodules (largest: `snaps-registry` at 53MB, `snaps`
+at 16MB). Acceptable.
+
+### Monolith changes
+- `.gitmodules` — 6 new entries
+- `DIDzMonolith.code-workspace` — 6 new folder entries under "🦊 ref:"
+  prefix for clear visual grouping next to the Cardano-native-metamask entry
+
+---
+
 ## Template for next entries
 
 ```
