@@ -31,10 +31,19 @@
     ],
     "snap_getBip32Entropy": [
       {
-        "path": ["m", "44'", "1296'", "0'"],
+        "path": ["m", "1852'", "1815'"],
+        "curve": "ed25519"
+      },
+      {
+        "path": ["m", "44'", "1815'"],
+        "curve": "ed25519"
+      },
+      {
+        "path": ["m", "44'", "1296'"],
         "curve": "ed25519"
       }
     ]
   },
+  "platformVersion": "10.3.0",
   "manifestVersion": "0.1"
 }
