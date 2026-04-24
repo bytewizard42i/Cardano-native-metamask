@@ -140,6 +140,7 @@ Snaps messaging.
 
 - [`docs/NAMING.md`](./docs/NAMING.md) — why CMM
 - [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) — demoland-as-mocked-dApp decision
+- [`docs/BLOCKFROST_INTEGRATION.md`](./docs/BLOCKFROST_INTEGRATION.md) — live chain data setup
 - [`docs/DEEP_DIVE_METAMASK_INTEGRATION.md`](./docs/DEEP_DIVE_METAMASK_INTEGRATION.md)
   — the full research deep-dive: ecosystem map, Snap mechanics, allowlist process,
   MetaMask's revenue model, competitive landscape, incentive levers

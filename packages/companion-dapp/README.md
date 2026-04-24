@@ -17,9 +17,14 @@ pnpm -F @cmm/companion-dapp dev
 # then open http://localhost:3000
 ```
 
-The default `ChainCard` forces `createSnapAdapter('mock')` so you see a
-fully-rendered UX with deterministic fixtures before any Snap exists.
-Swap `'mock'` → `'auto'` once the Snap reaches M2+.
+The top-of-page **Mode** toggle switches the adapter:
+
+- **Mock** — deterministic fixtures (default, works offline)
+- **Live data** — real Cardano preprod via Blockfrost; enabled when
+  `.env.local` has a project_id + demo address
+- **Snap (M1+)** — disabled until the CMM Snap ships
+
+See `../../docs/BLOCKFROST_INTEGRATION.md` for the 5-minute Blockfrost setup.
 
 ## Structure
 

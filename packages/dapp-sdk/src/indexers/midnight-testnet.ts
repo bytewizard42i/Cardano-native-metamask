@@ -41,19 +41,14 @@ export class MidnightTestnetIndexer implements IndexerAdapter {
 
   private readonly network: MidnightNetwork;
 
-  // `indexerUrl` and `fetchImpl` are persisted for the upcoming M2 GraphQL
-  // implementation; intentionally unused in the M1 stub below.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private readonly _indexerUrl: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private readonly _fetchImpl: typeof fetch;
-
   constructor(opts: MidnightTestnetOptions = {}) {
     this.network = opts.network ?? 'testnet-02';
-    this._indexerUrl =
-      opts.indexerUrl ?? `https://indexer.${this.network}.midnight.network/api/v1/graphql`;
-    this._fetchImpl = opts.fetchImpl ?? fetch;
     this.name = `midnight-indexer-${this.network}`;
+    // NOTE: `indexerUrl` and `fetchImpl` intentionally unused in the M1 stub.
+    // They'll be wired into the GraphQL client at M2 once the Snap exposes
+    // a viewing key. Accepting them now keeps the public API stable.
+    void opts.indexerUrl;
+    void opts.fetchImpl;
   }
 
   async getBalance(address: string): Promise<Balance> {

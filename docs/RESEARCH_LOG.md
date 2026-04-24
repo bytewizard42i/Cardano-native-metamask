@@ -222,6 +222,56 @@
 
 ---
 
+## 2026-04-24 — Blockfrost integration (live Cardano preprod balances)
+
+**Participants**: John, Cassie
+
+### Decision
+Blockfrost becomes CMM's default indexer. Lives in the dApp layer, not the
+Snap. See `docs/BLOCKFROST_INTEGRATION.md` for the full rationale.
+
+### What shipped
+- `@cmm/dapp-sdk/src/indexers/` — new module:
+  - `IndexerAdapter` interface + `IndexerError`
+  - `BlockfrostCardanoIndexer` — real preprod/mainnet/preview reads
+  - `MidnightTestnetIndexer` — M1 stub returning `"encrypted"` sentinel
+  - `MockIndexer` — deterministic fixtures
+  - `createIndexer(chain, config)` factory with `'mock' | 'live' | 'auto'`
+- New `live-readonly` SnapAdapter mode: real indexer reads, mock signing.
+  Bridges the gap before M1 Snap lands — stronger demo than pure fixtures.
+- `createSnapAdapter(mode, options)` now accepts `liveReadonly` config
+- `@cmm/shared` extended: `CardanoNetwork`, `MidnightNetwork`, symbol/decimal
+  constants, `Balance.network` field
+- Companion-dApp wiring:
+  - `src/lib/adapter.ts` — env-driven adapter resolver
+  - `ModeSwitcher` top-of-page toggle (Mock · Live · Snap-pending)
+  - `ChainCard` now: network badge, shielded-flag pill, encrypted
+    placeholder, error banner
+  - `.env.example` + `vite-env.d.ts` for typed env access
+
+### Design choices worth remembering
+- **Indexer stays out of the Snap** — API keys with deployer, audit surface
+  minimized. `wallet_invokeSnap` handlers do NO network I/O in M1.
+- **Midnight balance stays mock** until Snap provides viewing key (M2). The
+  `"encrypted"` sentinel string is the contract between indexer and UI.
+- **Graceful auto-fallback** — no Blockfrost project_id configured ⇒ the
+  factory silently uses `MockIndexer`. Demoland never breaks.
+- **`Balance.network` is optional** to preserve backward compatibility with
+  existing fixtures.
+
+### Verified in this session
+- `pnpm -F @cmm/companion-dapp typecheck` — clean across all 4 packages
+- Vite HMR hot-reloaded `chain-card.tsx` changes without dev-server restart
+- Server still on port 3000 from earlier session; ~50ms HMR updates as advertised
+
+### Deferred (intentional)
+- Client-side caching (15s TTL around `getBalance`) — M1
+- Midnight GraphQL viewing-key flow — M2
+- Koios / Maestro fallback indexers — M6+
+- `getUtxos`, `getTxHistory`, `submitTx` on the interface — M3
+
+---
+
 ## Template for next entries
 
 ```
