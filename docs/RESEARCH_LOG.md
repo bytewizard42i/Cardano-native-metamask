@@ -134,6 +134,49 @@
 
 ---
 
+## 2026-04-24 — Brand, team, and M0 scaffold
+
+**Participants**: John, Cassie
+
+### Decisions
+- **Brand: CMM** — pronounced "see-em-em". Works as "Cardano MetaMask"
+  (external) and "Cardano + Midnight in MetaMask" (internal). See
+  `docs/NAMING.md` for the full reasoning (CMM vs CMMN).
+- **Collaborator added**: Riley Kilgore (`Riley-Kilgore`, IOG / Aiken) invited
+  with `push` permission on `bytewizard42i/Cardano-native-metamask`.
+- **Build approach**: one project, not a separate demoland. The companion
+  dApp's mock adapter IS the demoland. See `docs/BUILD_STRATEGY.md`.
+
+### Implemented (M0 scaffold)
+- Monorepo: pnpm workspaces + Turborepo + strict TypeScript 5.6
+- Prettier + base tsconfig + root `.gitignore` additions
+- `packages/shared` — chain IDs, types, constants, coin-type registrations
+- `packages/snap` — manifest (CSL-friendly permissions, coin 1815 + Midnight
+  BIP32 path), `snap.config.ts`, entry + common/midnight/cardano handlers
+  (all M0 stubs with milestone-tagged errors), SVG icon placeholder
+- `packages/dapp-sdk` — `SnapAdapter` interface, `createSnapAdapter(mode)`
+  factory, full `mock` adapter with Cardano + Midnight fixtures, `real`
+  adapter calling `wallet_invokeSnap`
+- `packages/companion-dapp` — Next.js 15 App Router, Tailwind + CMM color
+  palette, hero, chain cards that consume the mock adapter and render
+  deterministic balances, footer
+- README rewritten with CMM brand, Riley, monorepo quickstart, links to
+  all strategy docs
+
+### Known non-issues
+- IDE shows many "cannot find module" lints pre-install. These all resolve
+  after `pnpm install` runs. They are not bugs; the TS server simply has no
+  node_modules / workspace symlinks to follow yet.
+
+### Next
+- Run `pnpm install` locally to verify workspace links resolve
+- Pick a Snap version of `@metamask/snaps-sdk` and `@metamask/snaps-cli`
+  from the latest published (versions in package.json are best-guess 2026-Q1)
+- First real code delivery: M2 — `midnight_getAddress` via
+  `snap_getBip32Entropy` inside the Midnight handler
+
+---
+
 ## Template for next entries
 
 ```

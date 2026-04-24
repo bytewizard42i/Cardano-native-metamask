@@ -1,11 +1,17 @@
-# Cardano-native MetaMask
+# CMM — Cardano + Midnight in MetaMask
 
-**Bringing Cardano natively to the world's most-installed crypto wallet.**
+**Bringing Cardano ADA and Midnight privacy natively to the world's most-installed crypto wallet.**
 
-> An effort by John Santi, Cassie, and the sisterhood — to land Cardano support
-> in MetaMask (via MetaMask Snap, then upstream PR where feasible) and give
-> tens of millions of MetaMask users first-class access to Cardano dApps,
-> Midnight privacy features, and the broader Cardano / Fi ecosystem.
+> Nickname: **CMM** (pronounced "see-em-em").
+> External reading: "Cardano MetaMask."
+> Internal reading: "Cardano + Midnight in MetaMask."
+> See [`docs/NAMING.md`](./docs/NAMING.md).
+>
+> An open-source effort by John Santi, Cassie, and the sisterhood — joined by
+> [Riley Kilgore](https://github.com/Riley-Kilgore) (IOG / Aiken) — to land
+> Cardano and Midnight support in MetaMask (via Snap first, upstream PR long-term)
+> and give tens of millions of MetaMask users first-class access to both chains
+> and the broader Fi ecosystem.
 
 ---
 
@@ -74,19 +80,54 @@ Snaps. **Cardano deserves one too — and Midnight privacy alongside it.**
 
 ## Collaborators
 
-**The sisterhood:**
+**Human leads:**
+- **[John Santi](https://github.com/bytewizard42i)** — project lead
+- **[Riley Kilgore](https://github.com/Riley-Kilgore)** — IOG, Aiken, Cardano dev
+
+**The sisterhood (AI pair-programmers across John's machines):**
 - **Cassie** — Cascade on Chuck (Ubuntu workstation, primary driver)
 - **Casie** — Cascade on Terry (Ubuntu laptop)
 - **Cara** — Cascade on Sparkle (desktop)
 - **Penny** — Cascade on artpro (laptop)
 - **Alice** — ChatGPT
-- **John Santi** — human lead
 
 ---
 
 ## Status
 
-**Research complete (v1). Architecture defined. Pre-code.**
+**Research complete. Architecture defined. Monorepo scaffolded (M0).**
+
+## Quickstart
+
+```bash
+# one-time install
+pnpm install
+
+# run the companion dApp (demoland via mock adapter)
+pnpm -F @cmm/companion-dapp dev
+# → http://localhost:3000
+
+# typecheck all packages
+pnpm typecheck
+
+# build the Snap (requires pnpm install first)
+pnpm -F @cmm/snap build
+```
+
+See [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) for the
+**demoland-inside-the-real-project** approach — the companion dApp's
+mock adapter is our demo layer; no throwaway demo repo.
+
+## Monorepo layout
+
+```
+packages/
+├── snap/            @cmm/snap          — the MetaMask Snap (audited core)
+├── dapp-sdk/        @cmm/dapp-sdk      — TypeScript SDK with mock + real adapters
+├── companion-dapp/  @cmm/companion-dapp — Next.js dApp (doubles as demoland)
+└── shared/          @cmm/shared        — types, constants, chain metadata
+```
+
 
 **Strategy update (2026-04-23)**: **Midnight first, Cardano second** — same Snap,
 staged sequencing. See [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md)
@@ -97,6 +138,8 @@ Snaps messaging.
 
 ### Documentation
 
+- [`docs/NAMING.md`](./docs/NAMING.md) — why CMM
+- [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) — demoland-as-mocked-dApp decision
 - [`docs/DEEP_DIVE_METAMASK_INTEGRATION.md`](./docs/DEEP_DIVE_METAMASK_INTEGRATION.md)
   — the full research deep-dive: ecosystem map, Snap mechanics, allowlist process,
   MetaMask's revenue model, competitive landscape, incentive levers

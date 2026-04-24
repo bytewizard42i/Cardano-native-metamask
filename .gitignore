@@ -1,3 +1,43 @@
+# --- CMM additions ---
+
+# pnpm / turbo
+node_modules
+.pnpm-store
+.turbo
+pnpm-debug.log*
+
+# builds
+dist
+build
+.next
+out
+
+# coverage
+coverage
+.nyc_output
+
+# env (NEVER commit secrets)
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# Snap-specific
+packages/snap/images/**/*.cache
+packages/snap/dist
+
+# audit workspace (reports go in audits/ as PDFs, source in repo)
+audits/*.drafts/
+
+# --- original template below ---
+
 # Logs
 logs
 *.log
