@@ -43,6 +43,16 @@ MetaMask has **~30M monthly active users** and is the default on-ramp to Web3 fo
 | **3 — Upstream PR to MetaMask core** | Where Snaps can't go (hardware-wallet deep paths, native UI). Stretch goal. | 🔭 Future |
 | **4 — Midnight Privacy Tier** | Leverage Midnight selective disclosure. ZK compliance, KYC-lite, private DeFi. Companion to AgenticDID. | 🔭 Future |
 
+> **📍 A note on "native"** — MetaMask offers a **five-tier integration ladder**:
+> (1) sideloaded Snap → (2) allowlisted Snap (one-click in the Snap Directory) →
+> (3) Keyring Snap (accounts appear in MetaMask's own UI) →
+> (4) first-party Snap (featured/maintained by MetaMask) →
+> (5) bundled into `metamask-extension` itself. **Only tier 5 is truly "native"**,
+> and zero non-EVM chains have ever landed there. We're shipping tier 1 now (M1),
+> targeting tier 2 at M6, tier 3 as the realistic endgame. See
+> [`docs/NATIVE_PATH.md`](./docs/NATIVE_PATH.md) for the full ladder + the specific
+> repos you'd fork for a true-native PR.
+
 ---
 
 ## 📍 Current Status — Milestone M1
@@ -121,6 +131,7 @@ Each package has its own README with API surface + usage examples.
 | Doc | What's in it |
 |---|---|
 | [`docs/NAMING.md`](./docs/NAMING.md) | Why CMM, why the initialism works |
+| [`docs/NATIVE_PATH.md`](./docs/NATIVE_PATH.md) | **Snap ≠ Native — and that's on purpose.** The five-tier integration ladder, the specific MetaMask repos you'd fork for a true-native PR, and why no non-EVM chain has ever merged that way. Written for Riley. |
 | [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) | Demoland-as-mocked-dApp decision; why no throwaway demo repo |
 | [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md) | Seven-reason case for shipping Midnight before Cardano |
 | [`docs/INCENTIVE_STRATEGY.md`](./docs/INCENTIVE_STRATEGY.md) | How to get MetaMask to say yes (allowlist → featured → upstream) |
