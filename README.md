@@ -86,11 +86,31 @@ Snaps. **Cardano deserves one too — and Midnight privacy alongside it.**
 
 ## Status
 
-**Greenfield.** Repo initialized. Architecture + scoping phase.
+**Research complete (v1). Architecture defined. Pre-code.**
 
-See:
-- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — target system design (coming)
-- [`docs/RESEARCH_LOG.md`](./docs/RESEARCH_LOG.md) — open questions, prior art
+**Strategy update (2026-04-23)**: **Midnight first, Cardano second** — same Snap,
+staged sequencing. See [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md)
+for the seven-reason case. TL;DR: NuFi already shipped a Cardano MetaMask Snap in
+Sept 2024 (Catalyst Fund11); no one has shipped Midnight-in-MetaMask, and Midnight's
+privacy narrative is the cleanest possible fit for MetaMask's own Interoperability
+Snaps messaging.
+
+### Documentation
+
+- [`docs/DEEP_DIVE_METAMASK_INTEGRATION.md`](./docs/DEEP_DIVE_METAMASK_INTEGRATION.md)
+  — the full research deep-dive: ecosystem map, Snap mechanics, allowlist process,
+  MetaMask's revenue model, competitive landscape, incentive levers
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — target stack, monorepo layout,
+  Snap API surface, security posture, phased milestones
+- [`docs/COMPETITIVE_ANALYSIS.md`](./docs/COMPETITIVE_ANALYSIS.md) — NuFi and every
+  other relevant Snap; positioning matrix; threats
+- [`docs/INCENTIVE_STRATEGY.md`](./docs/INCENTIVE_STRATEGY.md) — how to get
+  MetaMask to say yes (allowlist → featured → upstream); revenue-share postures
+- [`docs/MIDNIGHT_FIRST_STRATEGY.md`](./docs/MIDNIGHT_FIRST_STRATEGY.md) — why we
+  sequence Midnight before Cardano
+- [`docs/FUTURE_FUNCTIONALITY.md`](./docs/FUTURE_FUNCTIONALITY.md) — near, mid,
+  long-term roadmap and the explicit "no, never" list
+- [`docs/RESEARCH_LOG.md`](./docs/RESEARCH_LOG.md) — append-only session log
 
 ---
 
