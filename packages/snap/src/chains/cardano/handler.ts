@@ -1,7 +1,7 @@
 import { bytesToHex } from '@metamask/utils';
-import type { CardanoNetwork } from '@cmm/shared';
 import type { HandlerArgs, HandlerResult } from '../../common/handler';
 import { NotYetImplementedError, UnknownMethodError } from '../../common/errors';
+import { optCardanoNetwork } from '../../common/validate';
 import { deriveCardanoKeys } from './derive';
 import { buildShelleyBaseAddress } from './address';
 
@@ -35,7 +35,7 @@ export async function handleCardano({ request }: HandlerArgs): HandlerResult {
     }
 
     case 'cardano_getAddress': {
-      const network = parseNetwork(request.params) ?? 'preprod';
+      const network = optCardanoNetwork(request.method, request.params) ?? 'preprod';
       const keys = await deriveCardanoKeys(snap.request);
       const address = buildShelleyBaseAddress(
         keys.paymentPubKey,
@@ -58,15 +58,4 @@ export async function handleCardano({ request }: HandlerArgs): HandlerResult {
     default:
       throw new UnknownMethodError(request.method);
   }
-}
-
-/**
- * Extract and validate the optional `{ network }` param. Defaults to preprod
- * when absent — M1 is testnet-first per BUILD_STRATEGY.md.
- */
-function parseNetwork(params: unknown): CardanoNetwork | undefined {
-  if (!params || typeof params !== 'object') return undefined;
-  const raw = (params as { network?: unknown }).network;
-  if (raw === 'mainnet' || raw === 'preprod' || raw === 'preview') return raw;
-  return undefined;
 }

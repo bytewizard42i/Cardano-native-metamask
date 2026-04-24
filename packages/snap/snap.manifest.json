@@ -3,7 +3,7 @@
   "description": "CMM — Cardano + Midnight accounts in MetaMask.",
   "proposedName": "Cardano & Midnight",
   "source": {
-    "shasum": "xbdV+yxjp3L1a5VGrNh4HtMoHjSENgR7EK55th8CK1Q=",
+    "shasum": "aeXONRNjvkpuOIzDnYgxb2ah7wxuapLp7aM0cEU3w/Y=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

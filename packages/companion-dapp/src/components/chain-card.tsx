@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { AdapterMode, Balance, ChainId } from '@cmm/dapp-sdk';
 import { AlertTriangle, EyeOff, Loader2 } from 'lucide-react';
 import { resolveAdapter } from '@/lib/adapter';
+import { InfoHint } from './info-hint';
+import type { DocsLinkKey } from '@/lib/docs-links';
 
 interface ChainCardProps {
   chain: ChainId;
@@ -10,6 +12,23 @@ interface ChainCardProps {
   accent: string;
   mode: AdapterMode;
 }
+
+/**
+ * Per-chain learning links so users can click the ⓘ next to the chain
+ * title and jump to authoritative docs. Cardano → CIP-19 addresses;
+ * Midnight → testnet docs.
+ */
+const CHAIN_LEARN_MORE: Record<ChainId, DocsLinkKey> = {
+  cardano: 'cip19',
+  midnight: 'midnightTestnet',
+};
+
+const CHAIN_HINT_COPY: Record<ChainId, React.ReactNode> = {
+  cardano:
+    'Cardano addresses use the bech32 format with an "addr" (mainnet) or "addr_test" (preprod/preview) prefix. We target preprod throughout M1–M6 — no real ADA at risk.',
+  midnight:
+    'Midnight is a privacy-first L1 with shielded balances and ZK-native smart contracts. Balances are encrypted at rest; viewing them requires a viewing key the Snap will expose in M2.',
+};
 
 /**
  * Balance card driven by the `@cmm/dapp-sdk` adapter.
@@ -53,10 +72,21 @@ export function ChainCard({ chain, title, subtitle, accent, mode }: ChainCardPro
         <div className="flex items-center gap-3">
           <span className={`inline-block h-3 w-3 rounded-full ${accent}`} />
           <h2 className="text-2xl font-semibold">{title}</h2>
+          <InfoHint
+            label={`About ${title}`}
+            learnMore={CHAIN_LEARN_MORE[chain]}
+            size={14}
+          >
+            {CHAIN_HINT_COPY[chain]}
+          </InfoHint>
         </div>
         {balance?.network && (
-          <span className="rounded-full border border-cmm-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-cmm-muted">
+          <span className="inline-flex items-center gap-1 rounded-full border border-cmm-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-cmm-muted">
             {balance.network}
+            <InfoHint label="About testnets" learnMore="cmmBuildStrategy" size={10}>
+              CMM ships on testnets first (Cardano preprod + Midnight testnet-02) all
+              the way through M6. No mainnet money is ever at risk during development.
+            </InfoHint>
           </span>
         )}
       </div>
@@ -82,14 +112,25 @@ export function ChainCard({ chain, title, subtitle, accent, mode }: ChainCardPro
               <div className="mt-3 flex items-center gap-2 text-xl text-cmm-muted">
                 <EyeOff size={18} />
                 <span>Encrypted — install CMM Snap to decrypt</span>
+                <InfoHint label="Why is this encrypted?" learnMore="midnightDocs">
+                  Midnight stores balances as ZK commitments on-chain; no public
+                  observer can see amounts. Only a wallet with the right viewing
+                  key can decrypt. That's shipped by the Snap in M2.
+                </InfoHint>
               </div>
             ) : (
-              <div className="mt-3 text-3xl font-semibold">
-                {formatAmount(balance.native.amount, balance.native.decimals)}{' '}
-                <span className="text-base text-cmm-muted">{balance.native.symbol}</span>
+              <div className="mt-3 flex items-center gap-2 text-3xl font-semibold">
+                <span>
+                  {formatAmount(balance.native.amount, balance.native.decimals)}{' '}
+                  <span className="text-base text-cmm-muted">{balance.native.symbol}</span>
+                </span>
                 {balance.native.shielded && (
-                  <span className="ml-2 rounded bg-cmm-midnight/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-cmm-midnight">
+                  <span className="inline-flex items-center gap-1 rounded bg-cmm-midnight/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-cmm-midnight">
                     shielded
+                    <InfoHint label="About shielded balances" learnMore="midnightDocs" size={10}>
+                      Amount and recipient are hidden on-chain via ZK commitments.
+                      Only parties holding the viewing key can see the plain value.
+                    </InfoHint>
                   </span>
                 )}
               </div>

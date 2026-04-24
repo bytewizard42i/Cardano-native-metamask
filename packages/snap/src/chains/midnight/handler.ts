@@ -1,7 +1,7 @@
 import { bytesToHex } from '@metamask/utils';
-import type { MidnightNetwork } from '@cmm/shared';
 import type { HandlerArgs, HandlerResult } from '../../common/handler';
 import { NotYetImplementedError, UnknownMethodError } from '../../common/errors';
+import { optMidnightNetwork } from '../../common/validate';
 import { deriveMidnightKeys } from './derive';
 import { midnightPlaceholderAddress } from './address';
 
@@ -28,7 +28,7 @@ export async function handleMidnight({ request }: HandlerArgs): HandlerResult {
     }
 
     case 'midnight_getAddress': {
-      const network = parseNetwork(request.params) ?? 'testnet-02';
+      const network = optMidnightNetwork(request.method, request.params) ?? 'testnet-02';
       const keys = await deriveMidnightKeys(snap.request);
       return {
         address: midnightPlaceholderAddress(keys.pubKey, network),
@@ -52,15 +52,4 @@ export async function handleMidnight({ request }: HandlerArgs): HandlerResult {
     default:
       throw new UnknownMethodError(request.method);
   }
-}
-
-/**
- * Extract and validate the optional `{ network }` param. Defaults to
- * testnet-02 per BUILD_STRATEGY.md (testnet-first through M6).
- */
-function parseNetwork(params: unknown): MidnightNetwork | undefined {
-  if (!params || typeof params !== 'object') return undefined;
-  const raw = (params as { network?: unknown }).network;
-  if (raw === 'mainnet' || raw === 'testnet-02') return raw;
-  return undefined;
 }
