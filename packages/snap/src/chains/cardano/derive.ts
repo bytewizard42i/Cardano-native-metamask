@@ -1,6 +1,6 @@
 import { SLIP10Node } from '@metamask/key-tree';
 import type { ChainId } from '@cmm/shared';
-import { DerivationError } from '../../common/errors.js';
+import { DerivationError } from '../../common/errors';
 
 /**
  * Cardano HD key derivation per CIP-1852.

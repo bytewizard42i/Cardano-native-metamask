@@ -1,10 +1,10 @@
-import type { SnapAdapter } from './adapter.js';
-import { mockAdapter } from './adapters/mock.js';
-import { realAdapter } from './adapters/real.js';
+import type { SnapAdapter } from './adapter';
+import { mockAdapter } from './adapters/mock';
+import { realAdapter } from './adapters/real';
 import {
   createLiveReadonlyAdapter,
   type LiveReadonlyOptions,
-} from './adapters/live-readonly.js';
+} from './adapters/live-readonly';
 
 /**
  * Published Snap ID. During dev (M0–M5) points to the local dev server.

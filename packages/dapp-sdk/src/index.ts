@@ -13,13 +13,13 @@
  * See docs/BUILD_STRATEGY.md for the demoland-as-mocked-dApp approach,
  * and docs/BLOCKFROST_INTEGRATION.md for indexer setup.
  */
-export type { SnapAdapter } from './adapter.js';
+export type { SnapAdapter } from './adapter';
 export {
   createSnapAdapter,
   CMM_SNAP_ID,
   type AdapterMode,
   type CreateSnapAdapterOptions,
-} from './factory.js';
-export type { LiveReadonlyOptions } from './adapters/live-readonly.js';
-export * from './indexers/index.js';
+} from './factory';
+export type { LiveReadonlyOptions } from './adapters/live-readonly';
+export * from './indexers/index';
 export * from '@cmm/shared';

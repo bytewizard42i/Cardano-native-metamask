@@ -1,8 +1,8 @@
 import type { CardanoNetwork, ChainId, MidnightNetwork } from '@cmm/shared';
-import { BlockfrostCardanoIndexer } from './blockfrost-cardano.js';
-import type { IndexerAdapter } from './interface.js';
-import { MidnightTestnetIndexer } from './midnight-testnet.js';
-import { MockIndexer } from './mock.js';
+import { BlockfrostCardanoIndexer } from './blockfrost-cardano';
+import type { IndexerAdapter } from './interface';
+import { MidnightTestnetIndexer } from './midnight-testnet';
+import { MockIndexer } from './mock';
 
 export type IndexerMode = 'mock' | 'live' | 'auto';
 

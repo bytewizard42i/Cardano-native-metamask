@@ -1,36 +1,46 @@
 /**
  * CMM Snap — entry point.
  *
- * Milestone M0 (scaffold): responds to a handful of RPC methods with
- * clearly-marked placeholder results. No key derivation. No signing.
- *
- * Real behavior ships in M2 (read-only) and M3 (signing) per BUILD_STRATEGY.md.
+ * Milestone M1: real key derivation + address generation live for both
+ * chains. Signing / tx submission deferred to M3. See BUILD_STRATEGY.md.
  */
 
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 
-import { handleCardano } from './chains/cardano/handler.js';
-import { handleMidnight } from './chains/midnight/handler.js';
-import { handleCommon } from './common/handler.js';
+import { handleCardano } from './chains/cardano/handler';
+import { handleMidnight } from './chains/midnight/handler';
+import { handleCommon } from './common/handler';
+import { CmmSnapError, UnknownMethodError } from './common/errors';
 
 /**
  * RPC dispatcher. Routes `cardano_*`, `midnight_*`, and `common_*` method
- * namespaces to the corresponding chain adapter.
+ * namespaces to the corresponding chain adapter. Unwraps `CmmSnapError`
+ * into stable JSON-RPC error payloads so the dApp-side SDK can branch on
+ * `error.data.code` without parsing strings.
  */
 export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => {
-  const method = request.method;
+  try {
+    const method = request.method;
 
-  if (method.startsWith('cardano_')) {
-    return handleCardano({ origin, request });
+    if (method.startsWith('cardano_')) {
+      return await handleCardano({ origin, request });
+    }
+
+    if (method.startsWith('midnight_')) {
+      return await handleMidnight({ origin, request });
+    }
+
+    if (method.startsWith('common_')) {
+      return await handleCommon({ origin, request });
+    }
+
+    throw new UnknownMethodError(method);
+  } catch (err) {
+    if (err instanceof CmmSnapError) {
+      const wrapped: Error & { data?: unknown } = new Error(err.message);
+      wrapped.data = { code: err.code, chain: err.chain };
+      throw wrapped;
+    }
+    throw err;
   }
-
-  if (method.startsWith('midnight_')) {
-    return handleMidnight({ origin, request });
-  }
-
-  if (method.startsWith('common_')) {
-    return handleCommon({ origin, request });
-  }
-
-  throw new Error(`CMM: unknown RPC method "${method}"`);
 };

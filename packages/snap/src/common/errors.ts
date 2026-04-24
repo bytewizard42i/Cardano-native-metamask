@@ -12,7 +12,7 @@ import type { ChainId } from '@cmm/shared';
 export class CmmSnapError extends Error {
   public readonly code: string;
   public readonly chain?: ChainId;
-  public readonly cause?: unknown;
+  public override readonly cause?: unknown;
 
   constructor(args: { code: string; message: string; chain?: ChainId; cause?: unknown }) {
     super(args.message);

@@ -2,12 +2,8 @@
   "version": "0.0.0",
   "description": "CMM — Cardano + Midnight accounts in MetaMask.",
   "proposedName": "Cardano & Midnight",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bytewizard42i/Cardano-native-metamask.git"
-  },
   "source": {
-    "shasum": "0000000000000000000000000000000000000000000=",
+    "shasum": "xbdV+yxjp3L1a5VGrNh4HtMoHjSENgR7EK55th8CK1Q=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -27,7 +23,9 @@
     "snap_manageState": {},
     "snap_notify": {},
     "snap_getBip44Entropy": [
-      { "coinType": 1815 }
+      {
+        "coinType": 1815
+      }
     ],
     "snap_getBip32Entropy": [
       {
@@ -44,6 +42,6 @@
       }
     ]
   },
-  "platformVersion": "10.3.0",
+  "platformVersion": "10.4.0",
   "manifestVersion": "0.1"
 }

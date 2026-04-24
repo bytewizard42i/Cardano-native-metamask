@@ -1,7 +1,7 @@
 import type { Balance, ChainId, SignedTx, TxPayload } from '@cmm/shared';
-import type { SnapAdapter } from '../adapter.js';
-import { createIndexer, type IndexerConfig } from '../indexers/factory.js';
-import type { IndexerAdapter } from '../indexers/interface.js';
+import type { SnapAdapter } from '../adapter';
+import { createIndexer, type IndexerConfig } from '../indexers/factory';
+import type { IndexerAdapter } from '../indexers/interface';
 
 /**
  * `live-readonly` — real indexer reads, mock addresses, mock signing.

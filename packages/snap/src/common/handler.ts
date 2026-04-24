@@ -1,25 +1,50 @@
-import type { JsonRpcRequest } from '@metamask/snaps-sdk';
+import type { Json, JsonRpcRequest } from '@metamask/snaps-sdk';
 import { CHAINS, CMM_BRAND, CMM_LONG_NAME } from '@cmm/shared';
+import { UnknownMethodError } from './errors';
 
 export type HandlerArgs = {
   origin: string;
   request: JsonRpcRequest;
 };
 
+export type HandlerResult = Promise<Json>;
+
 /**
  * Common / cross-chain RPC methods.
  *
- * Scope M0: return static brand + supported chain info.
+ * M1 live methods:
+ *   - common_getSupportedChains → list of chain IDs CMM serves
+ *   - common_getBrand           → brand + long-name strings
+ *   - common_getCapabilities    → feature flags the dApp can branch on
  */
-export async function handleCommon({ request }: HandlerArgs): Promise<unknown> {
+export async function handleCommon({ request }: HandlerArgs): HandlerResult {
   switch (request.method) {
     case 'common_getSupportedChains':
-      return { chains: CHAINS };
+      return { chains: [...CHAINS] };
 
     case 'common_getBrand':
       return { brand: CMM_BRAND, longName: CMM_LONG_NAME };
 
+    case 'common_getCapabilities':
+      return {
+        milestone: 'M1',
+        capabilities: {
+          cardano: {
+            getPublicKey: true,
+            getAddress: true,
+            signTx: false, // M3
+            submitTx: false, // M3
+          },
+          midnight: {
+            getPublicKey: true,
+            getAddress: 'placeholder', // M1 stub encoding — see docs/BUILD_STRATEGY.md
+            getBalance: false, // M2 (needs viewing key)
+            signTx: false, // M3
+          },
+        },
+      };
+
     default:
-      throw new Error(`CMM: unknown common method "${request.method}"`);
+      throw new UnknownMethodError(request.method);
   }
 }

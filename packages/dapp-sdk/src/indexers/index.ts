@@ -1,5 +1,5 @@
-export * from './interface.js';
-export * from './factory.js';
-export { BlockfrostCardanoIndexer } from './blockfrost-cardano.js';
-export { MidnightTestnetIndexer } from './midnight-testnet.js';
-export { MockIndexer } from './mock.js';
+export * from './interface';
+export * from './factory';
+export { BlockfrostCardanoIndexer } from './blockfrost-cardano';
+export { MidnightTestnetIndexer } from './midnight-testnet';
+export { MockIndexer } from './mock';

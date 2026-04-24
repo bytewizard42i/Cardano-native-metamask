@@ -1,5 +1,5 @@
 import type { Balance, ChainId, SignedTx, TxPayload } from '@cmm/shared';
-import type { SnapAdapter } from '../adapter.js';
+import type { SnapAdapter } from '../adapter';
 
 /**
  * Mock adapter — returns deterministic fixtures so the companion dApp

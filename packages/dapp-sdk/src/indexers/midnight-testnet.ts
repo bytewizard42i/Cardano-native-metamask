@@ -1,6 +1,6 @@
 import type { Balance, MidnightNetwork } from '@cmm/shared';
 import { MIDNIGHT_NATIVE_SYMBOL, MIDNIGHT_DECIMALS } from '@cmm/shared';
-import type { IndexerAdapter } from './interface.js';
+import type { IndexerAdapter } from './interface';
 
 /**
  * Midnight testnet indexer — **stub for M1**.

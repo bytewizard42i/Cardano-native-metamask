@@ -1,5 +1,5 @@
 import type { Balance, ChainId } from '@cmm/shared';
-import type { IndexerAdapter } from './interface.js';
+import type { IndexerAdapter } from './interface';
 
 /**
  * Returns deterministic fixture balances, indistinguishable in shape from

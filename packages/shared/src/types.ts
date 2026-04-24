@@ -1,4 +1,4 @@
-import type { ChainId } from './chains.js';
+import type { ChainId } from './chains';
 
 /**
  * Chain-specific address. Opaque to the dApp; chain adapter decodes.

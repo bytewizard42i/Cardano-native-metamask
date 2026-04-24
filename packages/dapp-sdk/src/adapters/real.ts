@@ -1,6 +1,6 @@
 import type { Balance, ChainId, SignedTx, TxPayload } from '@cmm/shared';
-import type { SnapAdapter } from '../adapter.js';
-import { CMM_SNAP_ID } from '../factory.js';
+import type { SnapAdapter } from '../adapter';
+import { CMM_SNAP_ID } from '../factory';
 
 /**
  * Real adapter — invokes the installed CMM Snap via MetaMask's RPC.

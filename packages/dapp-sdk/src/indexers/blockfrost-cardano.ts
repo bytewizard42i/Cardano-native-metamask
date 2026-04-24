@@ -1,6 +1,6 @@
 import type { Balance, CardanoNetwork } from '@cmm/shared';
 import { CARDANO_NATIVE_SYMBOL, CARDANO_DECIMALS } from '@cmm/shared';
-import { IndexerError, type IndexerAdapter } from './interface.js';
+import { IndexerError, type IndexerAdapter } from './interface';
 
 /**
  * Blockfrost REST base URLs, keyed by Cardano network.

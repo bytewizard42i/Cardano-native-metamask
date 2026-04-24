@@ -1,6 +1,6 @@
 /**
  * @cmm/shared — public surface.
  */
-export * from './chains.js';
-export * from './types.js';
-export * from './constants.js';
+export * from './chains';
+export * from './types';
+export * from './constants';
