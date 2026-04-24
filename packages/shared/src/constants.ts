@@ -30,3 +30,17 @@ export const DEFAULT_PROOF_SERVER_LOCAL = 'http://localhost:6300';
 
 /** Maximum tx body size we'll decode inside the Snap dialog (bytes). */
 export const MAX_TX_PREVIEW_BYTES = 65_536;
+
+/* -------------------------------------------------------------------------- */
+/* Native asset metadata                                                       */
+/* -------------------------------------------------------------------------- */
+
+/** Cardano's native asset ticker. */
+export const CARDANO_NATIVE_SYMBOL = 'ADA' as const;
+/** Cardano: 1 ADA = 10^6 lovelace. */
+export const CARDANO_DECIMALS = 6 as const;
+
+/** Midnight's native asset ticker. */
+export const MIDNIGHT_NATIVE_SYMBOL = 'NIGHT' as const;
+/** Midnight native-token decimals — placeholder; verify against testnet-02 at M2. */
+export const MIDNIGHT_DECIMALS = 6 as const;

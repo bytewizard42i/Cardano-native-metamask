@@ -1,15 +1,25 @@
 /**
  * @cmm/dapp-sdk — public surface.
  *
- * The dApp SDK exposes a single {@link SnapAdapter} interface with two
- * implementations: `mock` (for dev/demoland) and `real` (talks to the
- * installed CMM Snap via MetaMask RPC).
+ * The dApp SDK exposes a single {@link SnapAdapter} interface with four
+ * implementations: `mock` (fixtures), `real` (wallet_invokeSnap),
+ * `live-readonly` (real indexer reads, mock signing), and `auto` (picks
+ * real/mock based on provider detection).
  *
- * Downstream code — including our own companion-dapp — should import the
- * adapter factory from this package and never branch on mock-vs-real.
+ * It also exposes the indexer layer (`createIndexer`) so dApps can query
+ * chain state independently of the Snap — useful for public explorers,
+ * read-only embeds, and the companion-dApp's "live balance" mode.
  *
- * See docs/BUILD_STRATEGY.md for the demoland-as-mocked-dApp approach.
+ * See docs/BUILD_STRATEGY.md for the demoland-as-mocked-dApp approach,
+ * and docs/BLOCKFROST_INTEGRATION.md for indexer setup.
  */
 export type { SnapAdapter } from './adapter.js';
-export { createSnapAdapter, CMM_SNAP_ID } from './factory.js';
+export {
+  createSnapAdapter,
+  CMM_SNAP_ID,
+  type AdapterMode,
+  type CreateSnapAdapterOptions,
+} from './factory.js';
+export type { LiveReadonlyOptions } from './adapters/live-readonly.js';
+export * from './indexers/index.js';
 export * from '@cmm/shared';

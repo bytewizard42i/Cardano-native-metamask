@@ -24,6 +24,8 @@ export interface AssetBalance {
 /** Full balance snapshot for an account on a given chain. */
 export interface Balance {
   chain: ChainId;
+  /** Optional per-chain network identifier (e.g. 'preprod', 'testnet-02'). */
+  network?: string;
   address: ChainAddress;
   native: AssetBalance;
   assets: AssetBalance[];
