@@ -1,0 +1,58 @@
+# Dependabot config for CMM.
+#
+# Rationale: the Snap ships JavaScript that signs transactions inside
+# users' MetaMask wallets. A compromised dependency = compromised users.
+# We let Dependabot open weekly PRs grouped by ecosystem so we can review
+# and ratify (or reject) each bump deliberately.
+#
+# Reference: SECURITY_CHECKLIST.md E1 (dependency provenance).
+
+version: 2
+updates:
+  # ----- pnpm root + every workspace package -----
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    groups:
+      metamask:
+        patterns:
+          - "@metamask/*"
+      noble:
+        patterns:
+          - "@noble/*"
+      jest:
+        patterns:
+          - "jest"
+          - "@jest/*"
+          - "ts-jest"
+          - "jest-mock-extended"
+          - "@types/jest"
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    labels:
+      - dependencies
+
+  # ----- GitHub Actions in our workflows -----
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(actions)"
+    labels:
+      - dependencies
+      - github-actions

@@ -22,6 +22,17 @@ import { DerivationError } from '../../common/errors';
  * cardano-specific library. Until then the addresses we generate are
  * SHAPE-CORRECT (bech32 `addr_test1...`) but NOT interoperable with Lace
  * / Eternl keys. This is good enough for M1 demos.
+ *
+ * SLIP-10 ed25519 quirks (key-tree v10):
+ *   - Use `slip10:` prefix for ed25519 — NOT `bip32:`. The `bip32:`
+ *     prefix routes through key-tree's BIP-32 deriver which is
+ *     secp256k1-only. `slip10:` routes through the curve-aware deriver.
+ *   - Plain Ed25519 SLIP-10 only supports HARDENED derivation. Real
+ *     CIP-1852 has non-hardened role + index components but those rely
+ *     on BIP32-Ed25519 (CIP-3). For M1 we hard-code every component as
+ *     hardened so the derivation succeeds.
+ *   - M2 swap target: `cip3:` prefix + standard CIP-1852 layout (mixed
+ *     hardened/non-hardened) for full Lace/Eternl interop.
  */
 
 const CMM_CARDANO_ACCOUNT_INDEX = 0;
@@ -57,26 +68,26 @@ export async function deriveCardanoKeys(
 
     // Derive account-level node (1852' / 1815' / account').
     const accountNode = await accountRoot.derive([
-      `bip32:${CMM_CARDANO_ACCOUNT_INDEX}'`,
+      `slip10:${CMM_CARDANO_ACCOUNT_INDEX}'`,
     ]);
 
-    // Payment key: account' / 0 / 0
+    // Payment key: account' / 0' / 0' (hardened-everywhere for M1)
     const paymentNode = await accountNode.derive([
-      `bip32:${ROLE_PAYMENT}`,
-      `bip32:${CMM_CARDANO_ADDRESS_INDEX}`,
+      `slip10:${ROLE_PAYMENT}'`,
+      `slip10:${CMM_CARDANO_ADDRESS_INDEX}'`,
     ]);
 
-    // Stake key: account' / 2 / 0
+    // Stake key: account' / 2' / 0' (hardened-everywhere for M1)
     const stakeNode = await accountNode.derive([
-      `bip32:${ROLE_STAKE}`,
-      `bip32:${CMM_CARDANO_ADDRESS_INDEX}`,
+      `slip10:${ROLE_STAKE}'`,
+      `slip10:${CMM_CARDANO_ADDRESS_INDEX}'`,
     ]);
 
     return {
       paymentPubKey: toBytes(paymentNode.publicKeyBytes),
       stakePubKey: toBytes(stakeNode.publicKeyBytes),
-      paymentPath: `m/1852'/1815'/${CMM_CARDANO_ACCOUNT_INDEX}'/${ROLE_PAYMENT}/${CMM_CARDANO_ADDRESS_INDEX}`,
-      stakePath: `m/1852'/1815'/${CMM_CARDANO_ACCOUNT_INDEX}'/${ROLE_STAKE}/${CMM_CARDANO_ADDRESS_INDEX}`,
+      paymentPath: `m/1852'/1815'/${CMM_CARDANO_ACCOUNT_INDEX}'/${ROLE_PAYMENT}'/${CMM_CARDANO_ADDRESS_INDEX}'`,
+      stakePath: `m/1852'/1815'/${CMM_CARDANO_ACCOUNT_INDEX}'/${ROLE_STAKE}'/${CMM_CARDANO_ADDRESS_INDEX}'`,
     };
   } catch (cause) {
     throw new DerivationError(

@@ -20,6 +20,10 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo '(shared: no lint yet)'",
-    "test": "echo '(shared: no tests yet)'"
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
   }
 }

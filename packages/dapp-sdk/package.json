@@ -19,9 +19,15 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo '(dapp-sdk: lint TBD)'",
-    "test": "echo '(dapp-sdk: vitest to come)'"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@cmm/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
+    "vitest": "^2.1.8"
   }
 }

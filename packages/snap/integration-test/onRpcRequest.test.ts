@@ -82,8 +82,8 @@ describe('CMM Snap — onRpcRequest end-to-end', () => {
       expect(response).toRespondWith(
         expect.objectContaining({
           network: 'preprod',
-          paymentPath: "m/1852'/1815'/0'/0/0",
-          stakePath: "m/1852'/1815'/0'/2/0",
+          paymentPath: "m/1852'/1815'/0'/0'/0'",
+          stakePath: "m/1852'/1815'/0'/2'/0'",
           address: expect.stringMatching(/^addr_test1[a-z0-9]{50,}$/),
         }),
       );
@@ -109,7 +109,11 @@ describe('CMM Snap — onRpcRequest end-to-end', () => {
         method: RpcMethod.Cardano.GetAddress,
         params: { network: 'devnet' },
       });
-      // The error code is the dApp-facing public contract.
+      // The wire format from @metamask/snaps-sdk's JsonRpcError
+      // wrappers (e.g. InvalidParamsError) is:
+      //   { code: -32602, data: { code: 'CMM_*', chain: '...', cause: null }, message: '...' }
+      // i.e. our CMM payload sits flat in `data`. dApp-side branches on
+      // `error.data.code`.
       expect(response).toRespondWithError(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -147,7 +151,7 @@ describe('CMM Snap — onRpcRequest end-to-end', () => {
       expect(response).toRespondWith(
         expect.objectContaining({
           network: 'testnet-02',
-          path: "m/44'/1296'/0'/0/0",
+          path: "m/44'/1296'/0'/0'/0'",
           placeholder: true,
           address: expect.stringMatching(MIDNIGHT_EXPECTED.placeholderAddressShape),
         }),
@@ -161,7 +165,7 @@ describe('CMM Snap — onRpcRequest end-to-end', () => {
       });
       expect(response).toRespondWith(
         expect.objectContaining({
-          path: "m/44'/1296'/0'/0/0",
+          path: "m/44'/1296'/0'/0'/0'",
           pubKeyHex: expect.stringMatching(/^0x[0-9a-f]{64}$/),
         }),
       );

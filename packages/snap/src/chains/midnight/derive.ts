@@ -44,15 +44,18 @@ export async function deriveMidnightKeys(
 
     const coinRoot = await SLIP10Node.fromJSON(entropy);
 
+    // Plain Ed25519 SLIP-10 only allows hardened derivation, and key-tree
+    // v10 requires the `slip10:` prefix (NOT `bip32:`) for the ed25519
+    // curve — the bip32 prefix routes through a secp256k1-only deriver.
     const addrNode = await coinRoot.derive([
-      `bip32:${CMM_MIDNIGHT_ACCOUNT_INDEX}'`,
-      'bip32:0',
-      `bip32:${CMM_MIDNIGHT_ADDRESS_INDEX}`,
+      `slip10:${CMM_MIDNIGHT_ACCOUNT_INDEX}'`,
+      "slip10:0'",
+      `slip10:${CMM_MIDNIGHT_ADDRESS_INDEX}'`,
     ]);
 
     return {
       pubKey: toBytes(addrNode.publicKeyBytes),
-      path: `m/44'/1296'/${CMM_MIDNIGHT_ACCOUNT_INDEX}'/0/${CMM_MIDNIGHT_ADDRESS_INDEX}`,
+      path: `m/44'/1296'/${CMM_MIDNIGHT_ACCOUNT_INDEX}'/0'/${CMM_MIDNIGHT_ADDRESS_INDEX}'`,
     };
   } catch (cause) {
     throw new DerivationError(

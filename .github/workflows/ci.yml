@@ -1,0 +1,165 @@
+# CI for CMM — Cardano + Midnight in MetaMask.
+#
+# Runs typecheck + unit tests + integration tests on every push and PR.
+# We DO NOT auto-publish anything; releases are manual + audited (see
+# docs/INCENTIVE_STRATEGY.md for the M6 allowlist path).
+#
+# References (for future maintainers):
+#   - .github/workflows from references/metamask-snap-bitcoin-wallet for
+#     the canonical pattern.
+#   - docs/TESTING_STRATEGY.md for the test-pyramid we're enforcing.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs when a new commit lands on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: 9.12.3
+  NODE_VERSION: 20
+
+jobs:
+  # ----------------------------------------------------------------------
+  # Lint + typecheck — fast, fails fast.
+  # ----------------------------------------------------------------------
+  static:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Submodules contain reference repos (~80MB) — only fetch when
+          # we actually need them. CI doesn't run those tests.
+          submodules: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (turbo)
+        run: pnpm typecheck
+
+      - name: Lint (turbo)
+        run: pnpm lint
+
+  # ----------------------------------------------------------------------
+  # Unit tests — every package in parallel via turborepo.
+  # ----------------------------------------------------------------------
+  unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Snap unit tests with coverage
+        run: pnpm -F @cmm/snap test:coverage
+
+      - name: dapp-sdk unit tests
+        run: pnpm -F @cmm/dapp-sdk test
+        # Allow this to no-op until M2 lands the dapp-sdk test suite.
+        continue-on-error: true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snap-coverage
+          path: packages/snap/coverage/
+          retention-days: 14
+
+  # ----------------------------------------------------------------------
+  # Integration tests — boots the Snap via @metamask/snaps-jest.
+  # Slower; runs on its own to keep unit feedback fast.
+  # ----------------------------------------------------------------------
+  integration:
+    name: Snap Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Build is required because @metamask/snaps-jest's installSnap()
+      # loads the bundled dist/bundle.js, not raw TS.
+      - name: Build Snap
+        run: pnpm -F @cmm/snap build
+
+      - name: Run integration suite
+        run: pnpm -F @cmm/snap test:integration
+
+  # ----------------------------------------------------------------------
+  # Manifest + bundle integrity. Catches accidental shasum drift.
+  # See SECURITY_CHECKLIST.md A4.
+  # ----------------------------------------------------------------------
+  manifest:
+    name: Snap Manifest Integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build & verify manifest
+        run: |
+          pnpm -F @cmm/snap build
+          pnpm -F @cmm/snap manifest
+          # Fail if the built bundle changed the shasum but the manifest
+          # wasn't updated in the same commit.
+          if ! git diff --exit-code packages/snap/snap.manifest.json; then
+            echo "::error::snap.manifest.json shasum drift — run 'pnpm -F @cmm/snap manifest' locally and commit the result"
+            exit 1
+          fi

@@ -508,6 +508,99 @@ Three questions any PR touching that file must answer.
 
 ---
 
+## 2026-04-26 (later) — Tests green, CI scaffolded, two real bugs caught
+
+**Participants**: John, Penny
+
+### Headline
+First full-suite green run: **149 tests passing across 4 packages**
+(89 Snap unit + 11 Snap integration + 29 dapp-sdk + 20 shared). The
+test infrastructure caught two real bugs the day it landed.
+
+### Bugs caught by the new test suite (the whole point)
+
+**Bug 1: Error data lost through JSON-RPC serialization.**
+- *Symptom*: integration tests asserting `error.data.code === 'CMM_*'`
+  saw `data: undefined`.
+- *Root cause*: `index.ts` was wrapping our `CmmSnapError` into a plain
+  `Error` with a `data` property. The Snap runtime serializes via
+  `@metamask/rpc-errors` which only preserves `data` on errors built
+  through its own constructors — plain `Error.data` is silently dropped.
+- *Fix*: Use `@metamask/snaps-sdk`'s `MethodNotFoundError`,
+  `InvalidParamsError`, `InternalError` wrappers. They serialize as
+  proper JSON-RPC errors with our payload at `error.data.{code,chain}`
+  flat (NOT nested under `data.cause` as the SnapError docs imply).
+- *Pattern reference*: `references/metamask-snap-bitcoin-wallet/packages/
+  snap/src/handlers/HandlerMiddleware.ts` does the same mapping.
+
+**Bug 2: Wrong path-prefix for ed25519 derivation.**
+- *Symptom*: every Cardano + Midnight derivation threw
+  `"Invalid curve: Only secp256k1 is supported by BIP-32."`
+- *Root cause*: `derive.ts` used `bip32:N'` path nodes for ed25519.
+  In `@metamask/key-tree` v10, the `bip32:` prefix routes through a
+  secp256k1-only deriver. Ed25519 needs `slip10:` (or `cip3:` for full
+  Cardano BIP32-Ed25519). This was hidden because our unit tests
+  mocked `snap.request` and didn't actually run derivation —
+  integration tests caught it the moment they booted a real Snap.
+- *Fix*: swapped all `bip32:N'` to `slip10:N'`. M2 will swap to `cip3:`
+  for Lace/Eternl interoperability.
+- *Bonus*: also forced every path component hardened (M1 plain
+  Ed25519 SLIP-10 only allows hardened); M2 CIP-3 swap restores the
+  standard mixed layout.
+
+### CI scaffolded
+
+- `.github/workflows/ci.yml` — 4 jobs: `static` (lint+typecheck),
+  `unit`, `integration`, `manifest` (shasum drift detector).
+- `.github/dependabot.yml` — weekly grouped npm bumps + monthly
+  GitHub Actions bumps. SECURITY_CHECKLIST.md E1 enforcement.
+
+### dApp SDK + shared got tests too
+
+- `@cmm/dapp-sdk` adopted **vitest** (lighter than jest for an
+  ESM-first lib package). 29 tests covering `mockAdapter`, `factory`
+  (auto-mode adapter selection), `realAdapter` (window.ethereum
+  mocking, error data shape).
+- `@cmm/shared` got `chains.test.ts` — 20 tests on `isChainId` +
+  network enum disjointness.
+
+### Coverage outcome
+
+After adding handler unit tests (cardano + midnight + common):
+
+| Metric | Result | M1 bar |
+|---|---|---|
+| Lines      | 92.25% | 60% |
+| Statements | 90.54% | 60% |
+| Functions  | 90.00% | 60% |
+| Branches   | 84.05% | 60% |
+
+We're already above the M3-target thresholds (75/65/62/74) on
+everything except branches. Will re-tighten in a follow-up.
+
+### CONTRIBUTING.md landed
+
+`CONTRIBUTING.md` at the repo root — onboards new contributors with
+the test-first workflow, the security-checklist gate, and the
+"sister convention" so AI pair-programmers across John's machines
+get attribution.
+
+### Open Questions
+
+- Should we wire `@metamask/eslint-config-snaps` now? The lint command
+  still echoes a stub. Probably worth a 30-min PR.
+- Coverage delta on `derive.ts` files (~70%) is the synthetic-fixture
+  limitation — `it.todo`'s waiting on the M2 mnemonic pipeline. Not a
+  threshold blocker but worth noting.
+
+### Next
+
+- Open M2 ticket: CIP-3 derivation + Cardano expected-vectors KAT
+  population + Midnight viewing-key prep.
+- Optional: enable branch protection on `main` requiring CI green.
+
+---
+
 ## Template for next entries
 
 ```
