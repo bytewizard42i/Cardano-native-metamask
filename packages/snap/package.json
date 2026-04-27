@@ -14,7 +14,10 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo '(snap: lint TBD with @metamask/eslint-config-snaps)'",
-    "test": "echo '(snap: vitest to come in M1)'",
+    "test": "jest --config jest.config.cjs",
+    "test:watch": "jest --config jest.config.cjs --watch",
+    "test:coverage": "jest --config jest.config.cjs --coverage",
+    "test:integration": "jest --config integration-test/jest.config.integration.cjs --runInBand",
     "manifest": "mm-snap manifest"
   },
   "dependencies": {
@@ -26,7 +29,13 @@
     "bech32": "^2.0.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.0.5",
     "@metamask/snaps-cli": "^8.3.0",
-    "@types/node": "^20.12.12"
+    "@metamask/snaps-jest": "^9.8.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.12.12",
+    "jest": "^30.0.5",
+    "jest-mock-extended": "^4.0.0",
+    "ts-jest": "^29.4.1"
   }
 }

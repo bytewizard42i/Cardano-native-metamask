@@ -203,6 +203,17 @@ pnpm -F @cmm/snap serve     # → local:http://localhost:8080 for MetaMask Flask
 pnpm -F @cmm/snap typecheck # → tsc --noEmit
 ```
 
+### Automated Tests
+
+```bash
+pnpm -F @cmm/snap test               # unit tests (jest)
+pnpm -F @cmm/snap test:watch         # unit tests, watch mode
+pnpm -F @cmm/snap test:coverage      # unit tests + coverage report
+pnpm -F @cmm/snap test:integration   # end-to-end via @metamask/snaps-jest
+```
+
+See [`docs/TESTING_STRATEGY.md`](../../docs/TESTING_STRATEGY.md) for the full pattern reference (lifted from `@metamask/bitcoin-wallet-snap`) and [`docs/SECURITY_CHECKLIST.md`](../../docs/SECURITY_CHECKLIST.md) for the threat model the suite defends against.
+
 ### Testing in MetaMask Flask
 
 1. Install [MetaMask Flask](https://docs.metamask.io/snaps/get-started/install-flask/) (Chrome/Brave/Firefox developer build)

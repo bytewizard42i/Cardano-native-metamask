@@ -145,6 +145,8 @@ Each package has its own README with API surface + usage examples.
 | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | Target stack, monorepo layout, Snap API surface, security posture, phased milestones |
 | [`docs/BLOCKFROST_INTEGRATION.md`](./docs/BLOCKFROST_INTEGRATION.md) | Live chain data setup (Cardano preprod indexer) |
 | [`docs/REFERENCE_REPOS.md`](./docs/REFERENCE_REPOS.md) | The six MetaMask repos we forked for reference (incl. the BTC Snap EUTXO template) |
+| [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md) | **How we test the Snap** — deep-dive on MetaMask's own test patterns + our adopted strategy |
+| [`docs/SECURITY_CHECKLIST.md`](./docs/SECURITY_CHECKLIST.md) | **Living threat model** — Snap, Cardano, and Midnight-specific risks, mapped to enforcement |
 | [`docs/DEEP_DIVE_METAMASK_INTEGRATION.md`](./docs/DEEP_DIVE_METAMASK_INTEGRATION.md) | The full research deep-dive: ecosystem map, Snap mechanics, allowlist process, MetaMask's revenue model |
 
 ### Session Log
