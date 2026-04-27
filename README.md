@@ -155,7 +155,7 @@ Each package has its own README with API surface + usage examples.
 
 ## 🦊 Reference Repos
 
-Six MetaMask repositories are forked under `bytewizard42i/*-metamask-johns-copy` and mounted as DIDzMonolith submodules at `/home/js/DIDzMonolith/utils_metamask-*`. These are **read-only references** — we pattern-match, we don't vendor code.
+Six MetaMask repositories are forked under `bytewizard42i/*-metamask-johns-copy` and mounted as **nested submodules** at `references/metamask-*` inside this repo. These are **read-only references** — we pattern-match, we don't vendor code.
 
 | Ref | Why it matters |
 |---|---|

@@ -278,17 +278,19 @@ Snap. See `docs/BLOCKFROST_INTEGRATION.md` for the full rationale.
 
 ### Decision
 Added **6 MetaMask repos** as forks (`bytewizard42i/*-metamask-johns-copy`)
-mounted as submodules into DIDzMonolith at `utils_metamask-*`. Documented
-in `docs/REFERENCE_REPOS.md`.
+mounted as **nested submodules** inside CMM at `references/metamask-*`.
+Documented in `docs/REFERENCE_REPOS.md`. *(Originally placed at
+DIDzMonolith root as `utils_metamask-*`, migrated into CMM on 2026-04-26
+so references travel with the project.)*
 
 ### What's in, what's out
 **In** (6):
-- `utils_metamask-snaps` — SDK monorepo
-- `utils_metamask-snap-bitcoin-wallet` — **primary EUTXO template**
-- `utils_metamask-snap-simple-keyring` — keyring pattern
-- `utils_metamask-template-snap-monorepo` — scaffold reference
-- `utils_metamask-snaps-registry` — allowlist (we'll PR at M6)
-- `utils_metamask-SIPs` — improvement proposals (potential future SIPs)
+- `references/metamask-snaps` — SDK monorepo
+- `references/metamask-snap-bitcoin-wallet` — **primary EUTXO template**
+- `references/metamask-snap-simple-keyring` — keyring pattern
+- `references/metamask-template-snap-monorepo` — scaffold reference
+- `references/metamask-snaps-registry` — allowlist (we'll PR at M6)
+- `references/metamask-SIPs` — improvement proposals (potential future SIPs)
 
 **Out** (2, intentionally):
 - `snap-solana-wallet` — account model, structurally far from UTXO chains
@@ -299,7 +301,7 @@ in `docs/REFERENCE_REPOS.md`.
 The Bitcoin Snap is our strongest architectural reference: Cardano EUTXO is
 a direct extension of Bitcoin UTXO; Midnight's shielded UTXO is Zcash-style
 on the same base. When we begin the Cardano handler in M2, read
-`utils_metamask-snap-bitcoin-wallet` first — UTXO selection, BIP32
+`references/metamask-snap-bitcoin-wallet` first — UTXO selection, BIP32
 derivation, tx building, and dialog UX all transfer.
 
 ### Mobile note
@@ -328,7 +330,7 @@ at 16MB). Acceptable.
 **Fork-or-clone the MetaMask reference repos?** Forked 6, dropped 1.
 - Forked (under `bytewizard42i/*-metamask-johns-copy`): `snaps`, `snap-bitcoin-wallet`, `snap-simple-keyring`, `template-snap-monorepo`, `snaps-registry`, `SIPs`.
 - Dropped `snap-solana-wallet` — account model, wrong lineage for us. Cardano EUTxO and Midnight shielded UTxO both descend from Bitcoin UTxO, so the Bitcoin Snap is our strongest architectural cousin.
-- Mounted all 6 as DIDzMonolith submodules at `/home/js/DIDzMonolith/utils_metamask-*`. ~83MB total disk.
+- Mounted all 6 as nested CMM submodules at `references/metamask-*`. ~83MB total disk. *(Migrated from DIDzMonolith root on 2026-04-26.)*
 
 **Adopt the keyring-Snap pattern now?** Deferred to M3.
 - BTC Snap uses `endowment:keyring` + `snap_manageAccounts` — accounts appear directly in MetaMask's account list UI. Powerful but significantly larger audit surface.

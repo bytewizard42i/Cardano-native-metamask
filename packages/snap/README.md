@@ -31,7 +31,7 @@ src/
         └── handler.ts      # midnight_* RPC methods
 ```
 
-**Influences**: mirrors the clean layout of `@metamask/bitcoin-wallet-snap` (repo vendored at `/home/js/DIDzMonolith/utils_metamask-snap-bitcoin-wallet`), simplified — no use-cases or repositories layer yet. We'll add those in M3 when signing + account state arrive.
+**Influences**: mirrors the clean layout of `@metamask/bitcoin-wallet-snap` (repo vendored at `references/metamask-snap-bitcoin-wallet` inside CMM), simplified — no use-cases or repositories layer yet. We'll add those in M3 when signing + account state arrive.
 
 ---
 

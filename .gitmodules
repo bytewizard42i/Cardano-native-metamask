@@ -1,0 +1,18 @@
+[submodule "references/metamask-snaps"]
+	path = references/metamask-snaps
+	url = git@github.com:bytewizard42i/snaps-metamask-johns-copy.git
+[submodule "references/metamask-template-snap-monorepo"]
+	path = references/metamask-template-snap-monorepo
+	url = git@github.com:bytewizard42i/template-snap-monorepo-metamask-john-copy.git
+[submodule "references/metamask-snaps-registry"]
+	path = references/metamask-snaps-registry
+	url = git@github.com:bytewizard42i/snaps-registry-mteamask-johns-copy.git
+[submodule "references/metamask-snap-bitcoin-wallet"]
+	path = references/metamask-snap-bitcoin-wallet
+	url = git@github.com:bytewizard42i/snap-bitcoin-wallet-metamask-johns-copy.git
+[submodule "references/metamask-snap-simple-keyring"]
+	path = references/metamask-snap-simple-keyring
+	url = git@github.com:bytewizard42i/snap-simple-keyring-metamask-johns-copy.git
+[submodule "references/metamask-SIPs"]
+	path = references/metamask-SIPs
+	url = git@github.com:bytewizard42i/SIPs-metamask-johns-copy.git

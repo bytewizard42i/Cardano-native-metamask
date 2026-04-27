@@ -2,7 +2,8 @@
 
 CMM pulls in several MetaMask repositories as **read-only references**
 (cloned as forks in `bytewizard42i/*-metamask-johns-copy`, mounted into
-`/home/js/DIDzMonolith/utils_metamask-*` as submodules of the monolith).
+`Cardano-native-metamask/references/metamask-*` as nested submodules of
+CMM itself — they travel with the project, not the monolith).
 
 Forking buys us: offline grep, stable snapshots, and a clean PR path when
 we actually need to contribute upstream.
@@ -11,12 +12,12 @@ we actually need to contribute upstream.
 
 | Local path | Purpose | Primary use in CMM |
 |---|---|---|
-| `utils_metamask-snaps` | The Snaps SDK monorepo. | Grep types, RPC method specs, lifecycle docs. Never modify. |
-| `utils_metamask-snap-bitcoin-wallet` | **EUTXO template.** Closest architectural cousin to Cardano. | Read first when scaffolding the Cardano handler (M2). Pattern-match UTXO selection, tx building, indexer calls, dialog UX. |
-| `utils_metamask-snap-simple-keyring` | Keyring-Snap pattern. | Reference when we build the CMM keyring (Midnight + Cardano custody). |
-| `utils_metamask-template-snap-monorepo` | Canonical Snap scaffold. | Cross-check our `@cmm/snap` layout against MM's blessed shape. |
-| `utils_metamask-snaps-registry` | Official allowlist registry. | We'll PR our Snap's entry here at M6. |
-| `utils_metamask-SIPs` | Snaps Improvement Proposals. | File a SIP if we need a non-standard RPC method (likely for Midnight shielded signing). |
+| `references/metamask-snaps` | The Snaps SDK monorepo. | Grep types, RPC method specs, lifecycle docs. Never modify. |
+| `references/metamask-snap-bitcoin-wallet` | **EUTXO template.** Closest architectural cousin to Cardano. | Read first when scaffolding the Cardano handler (M2). Pattern-match UTXO selection, tx building, indexer calls, dialog UX. |
+| `references/metamask-snap-simple-keyring` | Keyring-Snap pattern. | Reference when we build the CMM keyring (Midnight + Cardano custody). |
+| `references/metamask-template-snap-monorepo` | Canonical Snap scaffold. | Cross-check our `@cmm/snap` layout against MM's blessed shape. |
+| `references/metamask-snaps-registry` | Official allowlist registry. | We'll PR our Snap's entry here at M6. |
+| `references/metamask-SIPs` | Snaps Improvement Proposals. | File a SIP if we need a non-standard RPC method (likely for Midnight shielded signing). |
 
 ## Why Bitcoin Is Special
 
@@ -40,11 +41,11 @@ git merge upstream/main    # or rebase
 git push origin main
 ```
 
-Then update the monolith submodule pointer:
+Then update the CMM submodule pointer:
 ```bash
-cd /home/js/DIDzMonolith
-git add utils_metamask-<name>
-git commit -m "chore: bump utils_metamask-<name> from upstream"
+cd /home/js/DIDzMonolith/Cardano-native-metamask
+git add references/metamask-<name>
+git commit -m "chore: bump references/metamask-<name> from upstream"
 ```
 
 No rush; we should sync when we notice drift or when we're about to file
