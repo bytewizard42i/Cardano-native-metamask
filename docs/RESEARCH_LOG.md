@@ -413,6 +413,101 @@ at 16MB). Acceptable.
 
 ---
 
+## 2026-04-26 — Test infrastructure + threat model land
+
+**Participants**: John, Penny
+
+### Decision
+Stand up the testing rails NOW, while the M1 surface is still small enough
+to fully cover. Two new long-lived docs (`TESTING_STRATEGY.md`,
+`SECURITY_CHECKLIST.md`) + a working jest scaffold under `@cmm/snap`.
+
+### Approach (deep-dive on MetaMask's own test patterns)
+Read every test file in `references/metamask-snap-bitcoin-wallet/` —
+our closest EUTXO architectural cousin — and extracted the pattern:
+
+- **Two layers**: `src/**/*.test.ts` (unit) + `integration-test/` (boots
+  Snap via `installSnap()`).
+- **Stack**: `jest@30` + `ts-jest@29` + `@metamask/snaps-jest@9` preset
+  + `jest-mock-extended` for typed mocks.
+- **Coverage thresholds enforced** in jest config (BTC: 75/65/62/74).
+  CMM starts at 60 across the board, ratchet upward each milestone.
+- **Co-located unit tests**, separate integration folder + config.
+- **`resetMocks: true`** + `clearMocks: true` — never trust cross-test
+  state.
+- **Deterministic mnemonic** for integration tests: BIP-39 #1
+  (`abandon × 11 about`), the most cross-validated phrase in crypto.
+
+### What shipped today
+
+**Docs:**
+- `docs/TESTING_STRATEGY.md` — full pattern reference + CMM strategy.
+- `docs/SECURITY_CHECKLIST.md` — living threat model. Sections A–G
+  cover Snap-host / Cardano / Midnight / dApp-boundary / supply-chain /
+  test-hygiene threats, each mapped to enforcement (🔒) or milestone TODO.
+
+**Snap test scaffold:**
+- `packages/snap/jest.config.cjs` — unit config with coverage thresholds.
+- `packages/snap/integration-test/jest.config.integration.cjs` — uses
+  `@metamask/snaps-jest` preset.
+- `packages/snap/tsconfig.test.json` — test-only TS settings.
+- New scripts: `test`, `test:watch`, `test:coverage`, `test:integration`.
+- New devDeps: `jest@30`, `ts-jest@29`, `@metamask/snaps-jest@9`,
+  `jest-mock-extended@4`, `@jest/globals@30`, `@types/jest@30`.
+
+**Seed test files (all written, install-pending for first run):**
+- `src/common/validate.test.ts` — hostile-input fuzz, error-code stability.
+- `src/common/errors.test.ts` — public error-code contract regression guard.
+- `src/chains/cardano/address.test.ts` — KAT (known-answer tests) for
+  network bytes, header layout, bech32-1023-limit round-trip.
+- `src/chains/midnight/address.test.ts` — placeholder `_stub_` substring
+  contract that the UI relies on.
+- `src/chains/cardano/derive.test.ts` — mocks `snap.request`, asserts
+  correct path + curve sent to host. Five `it.todo` placeholders for the
+  full SLIP10 fixture (lands when M2 mnemonic pipeline arrives).
+- `integration-test/onRpcRequest.test.ts` — end-to-end via `installSnap()`
+  for every M1 RPC method, including error-code paths.
+- `integration-test/constants.ts` — `TEST_MNEMONIC`, `TEST_ORIGIN`,
+  `RpcMethod` enum.
+- `integration-test/expected-vectors.ts` — pinned KATs (currently `null`
+  for Cardano values; populated once M2 derivation lands).
+
+### Key design decisions
+
+**Known-Answer Tests over snapshots.** All cryptographic outputs compare
+against explicit expected values, never `toMatchSnapshot()`. Snapshots
+silently regenerate; KATs force a human pause when something changes.
+
+**Inline crypto libs are not mocked.** `@noble/hashes` and `bech32` are
+small, audited pure-JS — mocking them would hide the truth.
+
+**Hand validators stay (for now).** Re-evaluated `superstruct` vs the
+current 40-line `validate.ts` — for M1's 2 fields × 6 methods surface,
+the hand validator is clearer + smaller bundle. Swap at M3.
+
+**Expected-vectors review rule.** Comment block in `expected-vectors.ts`
+makes it a critical-review red flag if anyone changes a KAT silently.
+Three questions any PR touching that file must answer.
+
+### Open Questions
+
+- Do we record real Blockfrost responses with `nock` or hand-craft
+  minimal fixtures? *Decision deferred to BLOCKFROST_INTEGRATION.md M2 update.*
+- How do we test Midnight ZK-proof generation without a live proof
+  server? *Likely use midnight-js's mock proof provider once we
+  understand its surface.*
+
+### Next
+- John runs `pnpm install` from CMM root to fetch the new test deps.
+- First-run validation: `pnpm -F @cmm/snap test` should green for
+  `validate.test.ts`, `errors.test.ts`, `*/address.test.ts`. Some
+  `derive.test.ts` cases will hit the synthetic-fixture limitation —
+  that's expected and tracked as `it.todo`.
+- M2 kickoff plan: pick CIP-3 derivation approach, populate the
+  Cardano expected vectors, retire the `it.todo` set.
+
+---
+
 ## Template for next entries
 
 ```
