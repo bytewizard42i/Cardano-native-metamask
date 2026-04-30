@@ -1,4 +1,4 @@
-import type { Balance, CardanoNetwork } from '@cmm/shared';
+import type { Balance, BlockInfo, CardanoNetwork, NetworkInfo, Utxo } from '@cmm/shared';
 import { CARDANO_NATIVE_SYMBOL, CARDANO_DECIMALS } from '@cmm/shared';
 import { IndexerError, type IndexerAdapter } from './interface';
 
@@ -44,7 +44,13 @@ export interface BlockfrostCardanoOptions {
  *
  * Reference: https://docs.blockfrost.io/
  *
- * M1 scope: `getBalance(address)` against `/addresses/{address}`.
+ * M1 scope:
+ *   - `getBalance(address)` against `/addresses/{address}`
+ *   - `getUtxos(address)` against `/addresses/{address}/utxos`
+ *   - `getLatestBlock()` against `/blocks/latest`
+ *   - `getNetworkInfo()` composes `/network` + `/blocks/latest`
+ *   - `healthcheck()` against `/health`
+ *
  * We intentionally do NOT derive a stake address here — that belongs to
  * the Snap's key-derivation layer in M2.
  */
@@ -97,6 +103,86 @@ export class BlockfrostCardanoIndexer implements IndexerAdapter {
     return parseBlockfrostAddress(data, address, this.network);
   }
 
+  async getUtxos(address: string): Promise<Utxo[]> {
+    // Blockfrost paginates at 100 items/page max. For M1 we fetch up to 300
+    // UTXOs (3 pages); dApps needing more can layer on cursor-based iteration
+    // in a later milestone.
+    const PAGE_SIZE = 100;
+    const MAX_PAGES = 3;
+    const collected: BlockfrostUtxoEntry[] = [];
+
+    for (let page = 1; page <= MAX_PAGES; page += 1) {
+      const url = `${this.baseUrl}/addresses/${encodeURIComponent(
+        address,
+      )}/utxos?count=${PAGE_SIZE}&page=${page}`;
+      const res = await this.fetchImpl(url, {
+        headers: { project_id: this.projectId },
+      });
+
+      if (res.status === 404) {
+        // Address has no on-chain activity yet.
+        return [];
+      }
+      if (!res.ok) {
+        const body = await safeText(res);
+        throw new IndexerError(
+          `Blockfrost ${this.network} returned ${res.status} ${res.statusText} for ${address} utxos. ${body}`,
+          undefined,
+          this.name,
+          'HttpError',
+        );
+      }
+
+      const batch = (await res.json()) as BlockfrostUtxoEntry[];
+      collected.push(...batch);
+      if (batch.length < PAGE_SIZE) break; // last page
+    }
+
+    return collected.map((entry) => parseBlockfrostUtxo(entry, address));
+  }
+
+  async getLatestBlock(): Promise<BlockInfo> {
+    const url = `${this.baseUrl}/blocks/latest`;
+    const res = await this.fetchImpl(url, {
+      headers: { project_id: this.projectId },
+    });
+    if (!res.ok) {
+      const body = await safeText(res);
+      throw new IndexerError(
+        `Blockfrost ${this.network} returned ${res.status} ${res.statusText} for /blocks/latest. ${body}`,
+        undefined,
+        this.name,
+        'HttpError',
+      );
+    }
+    const data = (await res.json()) as BlockfrostBlockResponse;
+    return {
+      chain: 'cardano',
+      hash: data.hash,
+      height: data.height,
+      slot: data.slot,
+      time: data.time,
+      epoch: data.epoch,
+    };
+  }
+
+  async getNetworkInfo(): Promise<NetworkInfo> {
+    // Blockfrost doesn't have a single "network summary" endpoint; we derive one
+    // from `/blocks/latest`. We avoid the heavier `/network` endpoint because it
+    // returns supply/stake data we don't need for diagnostics.
+    const latest = await this.getLatestBlock();
+    const nowSec = Math.floor(Date.now() / 1000);
+    const msSinceLastBlock = Math.max(0, (nowSec - latest.time) * 1000);
+
+    return {
+      chain: 'cardano',
+      network: this.network,
+      latestBlock: latest,
+      msSinceLastBlock,
+      healthy: msSinceLastBlock < CARDANO_STALL_THRESHOLD_MS,
+    };
+  }
+
   async healthcheck(): Promise<boolean> {
     try {
       const res = await this.fetchImpl(`${this.baseUrl}/health`, {
@@ -108,6 +194,13 @@ export class BlockfrostCardanoIndexer implements IndexerAdapter {
     }
   }
 }
+
+/**
+ * Cardano's expected block cadence is ~20 seconds. If the latest block is
+ * more than ~2 minutes old we consider the chain (or indexer) stalled for UX
+ * purposes. Tuneable per milestone as real-world telemetry comes in.
+ */
+const CARDANO_STALL_THRESHOLD_MS = 2 * 60 * 1000;
 
 /* ------------------------------------------------------------------ */
 /* Blockfrost response shapes (only the fields we consume)             */
@@ -127,6 +220,28 @@ interface BlockfrostAddressResponse {
   stake_address: string | null;
   type: string;
   script: boolean;
+}
+
+interface BlockfrostUtxoEntry {
+  tx_hash: string;
+  tx_index: number;
+  output_index: number;
+  amount: BlockfrostAmount[];
+  block: string;
+  data_hash: string | null;
+  inline_datum: string | null;
+  reference_script_hash: string | null;
+}
+
+interface BlockfrostBlockResponse {
+  time: number;
+  height: number;
+  hash: string;
+  slot: number;
+  epoch: number;
+  epoch_slot: number;
+  size: number;
+  tx_count: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -169,6 +284,35 @@ function parseBlockfrostAddress(
       decimals: CARDANO_DECIMALS,
     },
     assets,
+  };
+}
+
+function parseBlockfrostUtxo(entry: BlockfrostUtxoEntry, address: string): Utxo {
+  const lovelace = entry.amount.find((a) => a.unit === 'lovelace');
+  const nativeAmount = lovelace?.quantity ?? '0';
+
+  const assets = entry.amount
+    .filter((a) => a.unit !== 'lovelace')
+    .map((a) => {
+      const assetNameHex = a.unit.slice(56);
+      const assetName = hexToAscii(assetNameHex) || assetNameHex;
+      return {
+        assetId: a.unit,
+        symbol: assetName,
+        amount: a.quantity,
+        decimals: 0,
+      };
+    });
+
+  return {
+    chain: 'cardano',
+    txHash: entry.tx_hash,
+    outputIndex: entry.output_index,
+    address,
+    amount: nativeAmount,
+    assets: assets.length > 0 ? assets : undefined,
+    datum: entry.inline_datum ?? entry.data_hash ?? undefined,
+    scriptRef: entry.reference_script_hash ?? undefined,
   };
 }
 

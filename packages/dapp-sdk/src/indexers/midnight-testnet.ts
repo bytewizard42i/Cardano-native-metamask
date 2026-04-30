@@ -1,6 +1,13 @@
-import type { Balance, MidnightNetwork } from '@cmm/shared';
+import type { Balance, BlockInfo, MidnightNetwork, NetworkInfo, Utxo } from '@cmm/shared';
 import { MIDNIGHT_NATIVE_SYMBOL, MIDNIGHT_DECIMALS } from '@cmm/shared';
-import type { IndexerAdapter } from './interface';
+import { IndexerError, type IndexerAdapter } from './interface';
+
+/**
+ * Default public endpoint for the Midnight testnet-02 indexer.
+ * Overridable at construction time for staging / self-hosted runs.
+ */
+const DEFAULT_MIDNIGHT_INDEXER_URL =
+  'https://indexer.testnet-02.midnight.network/api/v1/graphql';
 
 /**
  * Midnight testnet indexer — **stub for M1**.
@@ -40,15 +47,14 @@ export class MidnightTestnetIndexer implements IndexerAdapter {
   public readonly chain = 'midnight' as const;
 
   private readonly network: MidnightNetwork;
+  private readonly indexerUrl: string;
+  private readonly fetchImpl: typeof fetch;
 
   constructor(opts: MidnightTestnetOptions = {}) {
     this.network = opts.network ?? 'testnet-02';
+    this.indexerUrl = opts.indexerUrl ?? DEFAULT_MIDNIGHT_INDEXER_URL;
+    this.fetchImpl = opts.fetchImpl ?? fetch;
     this.name = `midnight-indexer-${this.network}`;
-    // NOTE: `indexerUrl` and `fetchImpl` intentionally unused in the M1 stub.
-    // They'll be wired into the GraphQL client at M2 once the Snap exposes
-    // a viewing key. Accepting them now keeps the public API stable.
-    void opts.indexerUrl;
-    void opts.fetchImpl;
   }
 
   async getBalance(address: string): Promise<Balance> {
@@ -71,8 +77,111 @@ export class MidnightTestnetIndexer implements IndexerAdapter {
     };
   }
 
+  async getUtxos(_address: string): Promise<Utxo[]> {
+    // Shielded UTXOs are encrypted commitments. Reading them requires the
+    // user's viewing key, which only the Snap will have (M2+).
+    throw new IndexerError(
+      'Midnight UTXOs require a viewing key from the CMM Snap. Available in M2+.',
+      undefined,
+      this.name,
+      'NotAvailableYet',
+    );
+  }
+
+  async getLatestBlock(): Promise<BlockInfo> {
+    // Block heights on Midnight are public state — no viewing key needed.
+    // Use a small GraphQL introspection-free query. If the Midnight indexer
+    // schema shifts between M1 and M2 we can adjust without widening scope.
+    const query = '{ block { height hash timestamp } }';
+    const res = await this.fetchImpl(this.indexerUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+    if (!res.ok) {
+      throw new IndexerError(
+        `Midnight indexer returned ${res.status} ${res.statusText} for latest block.`,
+        undefined,
+        this.name,
+        'HttpError',
+      );
+    }
+    type GraphQLResp = {
+      data?: { block?: { height: number; hash: string; timestamp: number | string } };
+      errors?: Array<{ message: string }>;
+    };
+    const payload = (await res.json()) as GraphQLResp;
+    if (payload.errors?.length) {
+      throw new IndexerError(
+        `Midnight indexer GraphQL errors: ${payload.errors.map((e) => e.message).join('; ')}`,
+        undefined,
+        this.name,
+        'ParseError',
+      );
+    }
+    const b = payload.data?.block;
+    if (!b || typeof b.height !== 'number' || typeof b.hash !== 'string') {
+      throw new IndexerError(
+        'Midnight indexer returned an unexpected shape for latest block.',
+        undefined,
+        this.name,
+        'ParseError',
+      );
+    }
+    // Timestamp may arrive as ISO string or unix-seconds depending on indexer version.
+    const time =
+      typeof b.timestamp === 'number'
+        ? b.timestamp
+        : Math.floor(Date.parse(b.timestamp) / 1000);
+    return {
+      chain: 'midnight',
+      hash: b.hash,
+      height: b.height,
+      time: Number.isFinite(time) ? time : 0,
+    };
+  }
+
+  async getNetworkInfo(): Promise<NetworkInfo> {
+    // Try to fetch the latest block. If the indexer is down or the schema has
+    // drifted, we still return a useful network descriptor marked unhealthy
+    // rather than throwing — the MidnightVitals panel needs to render something.
+    try {
+      const latest = await this.getLatestBlock();
+      const nowSec = Math.floor(Date.now() / 1000);
+      const msSinceLastBlock = Math.max(0, (nowSec - latest.time) * 1000);
+      return {
+        chain: 'midnight',
+        network: this.network,
+        latestBlock: latest,
+        msSinceLastBlock,
+        healthy: msSinceLastBlock < MIDNIGHT_STALL_THRESHOLD_MS,
+      };
+    } catch {
+      const ok = await this.healthcheck();
+      return { chain: 'midnight', network: this.network, healthy: ok };
+    }
+  }
+
   async healthcheck(): Promise<boolean> {
-    // TODO(M2): ping the GraphQL `/health` endpoint once we wire it.
-    return true;
+    // Minimal POST with an empty query; a running GraphQL server returns 400
+    // or 200 with a schema error — both mean the process is up. Network-level
+    // failures throw and we report false.
+    try {
+      const res = await this.fetchImpl(this.indexerUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: '{__typename}' }),
+      });
+      // 2xx, 4xx (schema errors) all mean server is reachable.
+      return res.status < 500;
+    } catch {
+      return false;
+    }
   }
 }
+
+/**
+ * Midnight targets ~6s block times on testnet. Allow 2 minutes of slack
+ * before we start calling a chain "stalled" in diagnostic UIs.
+ */
+const MIDNIGHT_STALL_THRESHOLD_MS = 2 * 60 * 1000;

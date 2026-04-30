@@ -61,3 +61,64 @@ export interface CmmError {
   chain?: ChainId;
   cause?: unknown;
 }
+
+/**
+ * A single unspent transaction output. Shape is chain-agnostic so dApps can
+ * render UTXO lists without caring which chain they came from; chain-specific
+ * fields are exposed via optional properties.
+ */
+export interface Utxo {
+  chain: ChainId;
+  /** Transaction hash the UTXO was created in (hex). */
+  txHash: string;
+  /** Output index within the creating transaction. */
+  outputIndex: number;
+  /** Address that controls the UTXO (bech32 on Cardano; shielded-address placeholder on Midnight). */
+  address: ChainAddress;
+  /** Lovelace / DUST / equivalent smallest-unit amount as stringified integer for bigint safety. */
+  amount: string;
+  /** Additional native-asset multi-values (Cardano: policy+asset; Midnight: DUST commitments). */
+  assets?: AssetBalance[];
+  /** Optional inline datum (Cardano Plutus) or commitment (Midnight). */
+  datum?: string;
+  /** Optional reference-script / proof-hash pointer. */
+  scriptRef?: string;
+  /** True if the balance is shielded (Midnight UTXOs are always shielded at M2+). */
+  shielded?: boolean;
+}
+
+/**
+ * Latest-block snapshot. Used by indexer.healthcheck() and by the diagnostics
+ * console to surface "chain is advancing" / "chain is stuck" signals.
+ */
+export interface BlockInfo {
+  chain: ChainId;
+  /** Block hash (hex) — used to de-dup / confirm freshness. */
+  hash: string;
+  /** Block height — monotonic, suitable for stall detection. */
+  height: number;
+  /** Block slot number (chain-specific; optional). */
+  slot?: number;
+  /** Block timestamp in seconds since unix epoch; present on every major chain. */
+  time: number;
+  /** Epoch number (Cardano) or equivalent (Midnight). Optional. */
+  epoch?: number;
+}
+
+/**
+ * Lightweight network descriptor. Emitted by indexer.getNetworkInfo() for use
+ * in the companion-dApp header strip and MidnightVitals diagnostics.
+ */
+export interface NetworkInfo {
+  chain: ChainId;
+  /** e.g. 'preprod', 'mainnet', 'testnet-02'. */
+  network: string;
+  /** Current protocol / era label if known (e.g. 'Conway', 'Ariadne'). */
+  era?: string;
+  /** Latest block known to the indexer. */
+  latestBlock?: BlockInfo;
+  /** Milliseconds since the last block was produced. Useful for stall detection. */
+  msSinceLastBlock?: number;
+  /** Indexer's self-reported health flag, if any. */
+  healthy?: boolean;
+}

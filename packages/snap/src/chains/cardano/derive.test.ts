@@ -60,7 +60,10 @@ describe('deriveCardanoKeys', () => {
       // synthetic fixture; we only care WHAT we asked the host for.
     });
 
-    expect(requestSpy).toHaveBeenCalledWith({
+    // Cast the spy to a generic jest.Mock to dodge TS2589 from jest's
+    // deeply-recursive mock-arg inference against the very wide `snap.request`
+    // overload set. Behaviour is identical at runtime.
+    expect(requestSpy as unknown as jest.Mock).toHaveBeenCalledWith({
       method: 'snap_getBip32Entropy',
       params: {
         path: ['m', "1852'", "1815'"],
