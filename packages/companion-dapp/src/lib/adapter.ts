@@ -26,6 +26,8 @@ export function resolveAdapter(mode?: AdapterMode): SnapAdapter {
           network: 'preprod',
           blockfrostProjectId:
             import.meta.env.VITE_BLOCKFROST_PROJECT_ID_CARDANO_PREPROD,
+          blockfrostProxyUrl:
+            import.meta.env.VITE_BLOCKFROST_PROXY_URL_CARDANO_PREPROD,
         },
         midnight: {
           network: 'testnet-02',
@@ -41,12 +43,14 @@ export function resolveAdapter(mode?: AdapterMode): SnapAdapter {
 }
 
 /**
- * Whether Cardano live-readonly data is configured (Blockfrost PID + demo addr).
- * Used by the UI to decide if the "Live data" toggle can be enabled.
+ * Whether Cardano live-readonly data is configured. Either:
+ *   - direct: VITE_BLOCKFROST_PROJECT_ID_CARDANO_PREPROD (dev)
+ *   - proxied: VITE_BLOCKFROST_PROXY_URL_CARDANO_PREPROD (prod, hides key)
+ * AND a demo address to query.
  */
 export function hasLiveCardanoConfig(): boolean {
-  return Boolean(
-    import.meta.env.VITE_BLOCKFROST_PROJECT_ID_CARDANO_PREPROD &&
-      import.meta.env.VITE_DEMO_CARDANO_ADDRESS,
-  );
+  const hasCreds =
+    Boolean(import.meta.env.VITE_BLOCKFROST_PROJECT_ID_CARDANO_PREPROD) ||
+    Boolean(import.meta.env.VITE_BLOCKFROST_PROXY_URL_CARDANO_PREPROD);
+  return hasCreds && Boolean(import.meta.env.VITE_DEMO_CARDANO_ADDRESS);
 }

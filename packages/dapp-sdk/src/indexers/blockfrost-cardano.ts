@@ -19,8 +19,11 @@ export interface BlockfrostCardanoOptions {
    * https://blockfrost.io/dashboard (50k req/day is ample for M0–M5).
    *
    * NOTE: one project_id corresponds to a single network. Don't mix.
+   *
+   * May be left empty IF `baseUrl` points to a proxy that injects the
+   * project_id header server-side (see `apps/proxy/`).
    */
-  projectId: string;
+  projectId?: string;
 
   /**
    * Which Cardano network to query. Defaults to `preprod` for M0–M5.
@@ -59,31 +62,44 @@ export class BlockfrostCardanoIndexer implements IndexerAdapter {
   public readonly chain = 'cardano' as const;
 
   private readonly projectId: string;
+  private readonly proxyMode: boolean;
   private readonly baseUrl: string;
   private readonly network: CardanoNetwork;
   private readonly fetchImpl: typeof fetch;
 
   constructor(opts: BlockfrostCardanoOptions) {
-    if (!opts.projectId) {
+    // projectId is required UNLESS a proxy baseUrl is supplied.
+    // In proxy mode the server injects the header so the browser never sees the key.
+    const proxyMode = Boolean(opts.baseUrl) && !opts.projectId;
+    if (!opts.projectId && !opts.baseUrl) {
       throw new IndexerError(
-        'BlockfrostCardanoIndexer requires a projectId. ' +
-          'Get one free at https://blockfrost.io/dashboard and set ' +
-          'VITE_BLOCKFROST_PROJECT_ID_CARDANO_PREPROD in .env.local',
+        'BlockfrostCardanoIndexer requires either a projectId or a proxy baseUrl. ' +
+          'For dev: get a free key at https://blockfrost.io/dashboard and set ' +
+          'VITE_BLOCKFROST_PROJECT_ID_CARDANO_PREPROD in .env.local. ' +
+          'For prod: deploy apps/proxy/ and set VITE_BLOCKFROST_PROXY_URL_CARDANO_PREPROD.',
         undefined,
         'blockfrost-cardano',
       );
     }
-    this.projectId = opts.projectId;
+    this.projectId = opts.projectId ?? '';
+    this.proxyMode = proxyMode;
     this.network = opts.network ?? 'preprod';
     this.baseUrl = opts.baseUrl ?? BLOCKFROST_BASE_URLS[this.network];
     this.fetchImpl = opts.fetchImpl ?? fetch;
-    this.name = `blockfrost-cardano-${this.network}`;
+    this.name = proxyMode
+      ? `blockfrost-cardano-${this.network}-proxied`
+      : `blockfrost-cardano-${this.network}`;
+  }
+
+  /** Build request headers — omit project_id in proxy mode (proxy injects it). */
+  private headers(): HeadersInit {
+    return this.proxyMode ? {} : { project_id: this.projectId };
   }
 
   async getBalance(address: string): Promise<Balance> {
     const url = `${this.baseUrl}/addresses/${encodeURIComponent(address)}`;
     const res = await this.fetchImpl(url, {
-      headers: { project_id: this.projectId },
+      headers: this.headers(),
     });
 
     if (res.status === 404) {
@@ -116,7 +132,7 @@ export class BlockfrostCardanoIndexer implements IndexerAdapter {
         address,
       )}/utxos?count=${PAGE_SIZE}&page=${page}`;
       const res = await this.fetchImpl(url, {
-        headers: { project_id: this.projectId },
+        headers: this.headers(),
       });
 
       if (res.status === 404) {
@@ -144,7 +160,7 @@ export class BlockfrostCardanoIndexer implements IndexerAdapter {
   async getLatestBlock(): Promise<BlockInfo> {
     const url = `${this.baseUrl}/blocks/latest`;
     const res = await this.fetchImpl(url, {
-      headers: { project_id: this.projectId },
+      headers: this.headers(),
     });
     if (!res.ok) {
       const body = await safeText(res);
@@ -186,7 +202,7 @@ export class BlockfrostCardanoIndexer implements IndexerAdapter {
   async healthcheck(): Promise<boolean> {
     try {
       const res = await this.fetchImpl(`${this.baseUrl}/health`, {
-        headers: { project_id: this.projectId },
+        headers: this.headers(),
       });
       return res.ok;
     } catch {

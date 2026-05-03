@@ -42,7 +42,7 @@ function mockFetch(handlers: Array<(url: string) => Response | undefined>) {
 /* ------------------------------------------------------------------ */
 
 describe('BlockfrostCardanoIndexer — construction', () => {
-  it('throws ConfigError without a projectId', () => {
+  it('throws ConfigError without a projectId AND without a baseUrl', () => {
     expect(() => new BlockfrostCardanoIndexer({ projectId: '' })).toThrow(
       IndexerError,
     );
@@ -56,6 +56,55 @@ describe('BlockfrostCardanoIndexer — construction', () => {
     });
     expect(idx.name).toBe('blockfrost-cardano-preprod');
     expect(idx.chain).toBe('cardano');
+  });
+
+  it('proxy mode: accepts empty projectId when baseUrl is supplied', () => {
+    const idx = new BlockfrostCardanoIndexer({
+      baseUrl: 'https://cmm-proxy.example.com/api/blockfrost/preprod',
+      network: 'preprod',
+      fetchImpl: vi.fn() as unknown as typeof fetch,
+    });
+    expect(idx.name).toBe('blockfrost-cardano-preprod-proxied');
+  });
+
+  it('proxy mode: requests OMIT the project_id header (proxy injects it)', async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response('{"hash":"abc","height":1,"slot":2,"time":1700000000}', {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
+    ) as unknown as typeof fetch;
+    const idx = new BlockfrostCardanoIndexer({
+      baseUrl: 'https://cmm-proxy.example.com/api/blockfrost/preprod',
+      network: 'preprod',
+      fetchImpl,
+    });
+    await idx.getLatestBlock();
+    const callArgs = (fetchImpl as unknown as { mock: { calls: unknown[][] } })
+      .mock.calls[0];
+    const init = callArgs?.[1] as RequestInit | undefined;
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    expect(headers.project_id).toBeUndefined();
+  });
+
+  it('direct mode: requests INCLUDE the project_id header', async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response('{"hash":"abc","height":1,"slot":2,"time":1700000000}', {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
+    ) as unknown as typeof fetch;
+    const idx = new BlockfrostCardanoIndexer({
+      projectId: 'preprodTEST',
+      network: 'preprod',
+      fetchImpl,
+    });
+    await idx.getLatestBlock();
+    const callArgs = (fetchImpl as unknown as { mock: { calls: unknown[][] } })
+      .mock.calls[0];
+    const init = callArgs?.[1] as RequestInit | undefined;
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    expect(headers.project_id).toBe('preprodTEST');
   });
 });
 

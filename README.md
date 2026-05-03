@@ -85,25 +85,28 @@ MetaMask has **~30M monthly active users** and is the default on-ramp to Web3 fo
 
 ---
 
-## 🚀 Quickstart
+## 🚀 Quickstart — one-button startup
 
 ```bash
-# one-time install
+./start.sh        # checks Node/pnpm, installs deps, creates .env.local, starts everything
+```
+
+This single command brings up the whole monorepo: the Snap on `:8080`, the
+companion dApp on `:3000`, and the libs in watch mode. **No Docker. No backend
+of your own.** Stop with `Ctrl-C`.
+
+📖 **Newbie-friendly walkthrough**: [`RUNBOOK.md`](./RUNBOOK.md) — three tiers
+(Mock → Live data → Snap mode) with click-by-click instructions, including how
+to install MetaMask Flask and get a free Blockfrost key.
+
+### Manual commands (if you don't want the script)
+
+```bash
 pnpm install
-
-# run the companion dApp (demoland via mock adapter)
-pnpm -F @cmm/companion-dapp dev
-# → http://localhost:3000
-
-# typecheck all packages
+pnpm dev              # Turborepo runs all packages in parallel
 pnpm typecheck
-
-# build the Snap (produces dist/bundle.js)
+pnpm test             # 161 tests across 4 packages
 pnpm -F @cmm/snap build
-
-# serve the Snap locally for MetaMask Flask
-pnpm -F @cmm/snap serve
-# → Snap available at local:http://localhost:8080
 ```
 
 > 💡 See [`docs/BUILD_STRATEGY.md`](./docs/BUILD_STRATEGY.md) for the **demoland-inside-the-real-project** approach — the companion dApp's mock adapter *is* our demo layer; no throwaway demo repo.

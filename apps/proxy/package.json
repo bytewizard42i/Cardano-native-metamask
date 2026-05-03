@@ -1,0 +1,19 @@
+{
+  "name": "@cmm/proxy",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CMM Blockfrost proxy — Vercel Edge Function. Hides the project_id server-side.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vercel dev --listen 3001",
+    "deploy": "vercel deploy --prod",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo '(proxy: lint TBD)'",
+    "test": "echo '(proxy: tests TBD)'"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.6.3",
+    "vercel": "^39.0.0"
+  }
+}
