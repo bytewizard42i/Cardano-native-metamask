@@ -1,0 +1,20 @@
+# CODEOWNERS — required reviewers for sensitive paths.
+# Protects the audit-critical Snap and the repo's safety guardrails from
+# unreviewed changes. Requires branch protection with "Require review from
+# Code Owners" enabled on main to be enforced.
+
+# Default owner for everything
+*                           @bytewizard42i
+
+# Audit-critical Snap — every change needs owner review
+/packages/snap/             @bytewizard42i
+
+# Shared types/constants consumed by the Snap
+/packages/shared/           @bytewizard42i
+
+# CI, dependency, and guardrail files — do not change without owner review
+/.github/                   @bytewizard42i
+/.windsurf/                 @bytewizard42i
+/.gitignore                 @bytewizard42i
+/.gitmodules                @bytewizard42i
+/pnpm-lock.yaml             @bytewizard42i
