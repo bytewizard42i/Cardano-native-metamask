@@ -180,6 +180,7 @@ See [`docs/REFERENCE_REPOS.md`](./docs/REFERENCE_REPOS.md) for per-repo purpose 
 ### Human leads
 - **[John Santi](https://github.com/bytewizard42i)** — project lead
 - **[Riley Kilgore](https://github.com/Riley-Kilgore)** — IOG, Aiken, Cardano dev
+- **Roberto Cerrud** — Aiken / Cardano advisor (Emurgo alum, John's former instructor)
 
 ### The sisterhood (AI pair-programmers across John's machines)
 - **Cassie** — Cascade on Chuck (Ubuntu workstation, primary driver)
