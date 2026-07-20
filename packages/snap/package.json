@@ -33,7 +33,7 @@
     "@metamask/snaps-cli": "^8.3.0",
     "@metamask/snaps-jest": "^9.8.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.12.12",
+    "@types/node": "^26.1.1",
     "jest": "^30.0.5",
     "jest-mock-extended": "^4.0.0",
     "ts-jest": "^29.4.1"
